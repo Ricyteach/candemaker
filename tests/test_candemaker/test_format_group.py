@@ -55,16 +55,17 @@ def test_member_format(ALineDefMembers):
     with pytest.raises(IndexError):
         assert d.format()
         
-'''
 def test_class_format_tuple(ALineDefClass, ALineDefMembers, ABCD_namedtuple):
     a,b,c,d = ALineDefMembers
     abcd = ABCD_namedtuple(1,2,'x','foo')
     assert ALineDefClass.format(abcd) == '    1  2.000000 xfoo'
     
+@pytest.mark.current
 def test_class_format_dict(ALineDefClass, ALineDefMembers):
-    assert ALineDefClass.format(**dict(a=1)) == '    1  0.000000  '
-    assert ALineDefClass.format(**dict(a=1, d='d')) == '    1  0.000000  d'
+    assert ALineDefClass.format(dict(a=1, d='d')) == '    1  0.000000  d'
+    assert ALineDefClass.format(dict(a=1)) == '    1  0.000000  '
 
+'''
 def test_class_format_mixture(ALineDefClass, ALineDefMembers, ABCD_namedtuple):
     a,b,c,d = ALineDefMembers
     a_nt = nt('A', 'a')(1)

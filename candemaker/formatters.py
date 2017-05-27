@@ -1,45 +1,6 @@
-from collections import OrderedDict as od
+from candemaker.utilities import args_kwargs_from_args
 from string import Formatter
 from abc import ABC
-
-def update_special(d, **kwargs):
-    '''Update a dict as usual, but an error is raised if there are duplicate keys.'''
-    try:
-        conflict = next(k for k in kwargs if k in d)
-    except StopIteration:
-        d.update(**kwargs)
-    else:
-        raise ValueError('Duplicate key detected: "{}".'.format(conflict))
-        
-def args_kwargs_from_args(args, slc=slice(0,None), ignore_conflicts=True, terminate_on_failure=True):
-    '''Given an args list and slice, remove any kwarg-like objects from the list
-    and return in a separate namespace.'''
-    kwargs = od()
-    if isinstance(args, str):
-        return [args], kwargs
-    args = args[:]
-    stop = slc.stop if slc.stop is not None else len(args)
-    start = slc.start if slc.start is not None else 0
-    step = slc.step if slc.step is not None else {True:-1,False:1}[start>stop]
-    rng = range(start,stop,step)
-    remove_i = []
-    if ignore_conflicts:
-        update = od.update
-    else:
-        update = update_special
-    for i in rng:
-        try:
-            d = od(**args[i])
-        except TypeError:
-            if terminate_on_failure:
-                break
-            else:
-                continue
-        else:
-            update(kwargs, **d)
-            remove_i.append(i)
-    args = [args[i] for i in range(len(args)) if i not in remove_i]
-    return args, kwargs
 
 class ArgsParseMixin(ABC):
     '''A mixin for providing default arg parsing behavior.'''
@@ -53,6 +14,8 @@ class StaticFormatter(Formatter, ArgsParseMixin):
         self._format_str = format_str
         super().__init__(*args, **kwargs)
     def format(self, *args, **kwargs):
+        '''The format method has been overridden to change the signature.
+        Formmatting logic should be handled using get_value, format_field, etc.'''
         return super().format(self._format_str, *args, **kwargs)
 
 class DefaultFormatter(Formatter, ArgsParseMixin):
@@ -130,7 +93,7 @@ class PositionalDefaultFormatter(DefaultFormatter):
         f = PositionalDefaultFormatter(*args, **kwargs)
         '''
         namespace_slice = slice(-1,None,-1)
-        args, kwargs = args_kwargs_from_args(args, slc=namespace_slice, ignore_conflicts=True, terminate_on_failure=True)
+        args, kwargs = args_kwargs_from_args(args, slc=namespace_slice, asdict=True, ignore_conflicts=True, terminate_on_failure=True)
         kwargs = dict(default_namespace = kwargs)
         return args, kwargs
         

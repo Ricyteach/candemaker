@@ -1,29 +1,9 @@
+from candemaker.utilities import update_special, set_item_if, args_kwargs_from_args
 from candemaker.formatters import VersatileFormatter
 from collections import OrderedDict as od
 
 import sys
 assert (sys.version_info)>(3,6)
-
-def set_item_if(obj, name, value, test):
-    '''Sets an item of obj to a value if test passes.
-    The test signature must be of the form:
-        test(obj,name,value)'''
-    # allow for individual arguments or iterables
-    try:
-        names = [name] if isinstance(name, str) else (*name,)
-    except TypeError:
-        names = [name]
-    try:
-        values = [value] if isinstance(value, str) else (*value,)
-    except TypeError:
-        values = [value]
-    # check that same number of names and values provided
-    if len(names)!=len(values):
-        raise ValueError('Unequal number of names ({}) and values ({}) provided.'.format(len(names), len(values)))
-    # set items based on test result
-    for name,value in zip(names, values):
-        if test(obj,name,value):
-            obj[name] = value
 
 class SpecialAttrsMeta(type):
     '''A base metaclass that removes special attribute names from the namespace
@@ -85,10 +65,29 @@ class FormatGroupMeta(SpecialAttrsMeta):
         # pass each set of args and kwargs to the formatter type
         cls._formatters = {k:formatter for k,formatter in zip(formatter_defs,formatters)}
         cls.__init__(name,bases,mapping)
-    def format(cls, *args, **kwargs):
-        '''Return formatted string using joined prefix, formatters, and separator.'''
-        for formatter in cls:
-            return cls._prefix + cls._sep.join(formatter.format(*args, **kwargs))
+    def format(cls, *args, _asdict=True, _nomappings=True, **unified_namespace):
+        '''Return formatted string using joined prefix, formatters, and separator.
+        Mapping objects can represent individual member namespaces and the values will be 
+        appended to the args of the member name matching the key.
+        
+        _nomappings:
+            If True any Mapping object in args list is a member namespace. It will be 
+            separated out as appended args via the name of that member or method as a key.
+        _asdict:
+            If True any object in args list that includes an .asdict or ._asdict attribute will 
+            be treated as a Mapping object via the name of that member or method as a key.'''
+        # namespaces to be passed to each formatter member on a per-member basis
+        format_namespaces = {}
+        if _nomappings:
+            # separate out any Mapping or .asdict/._asdict objects starting from the end of args
+            unified_args, kwargs_from_args = args_kwargs_from_args(args, slc=slice(-1,None,-1), asdict=_asdict, ignore_conflicts=True, terminate_on_failure=True)
+            # convert any single namespace arguments to an args list
+            format_namespaces.update(**{k:(a if not isinstance(a,str) and hasattr(a, '__iter__') else [a]) for k,a in kwargs_from_args.items()})
+            args_to_print = [*unified_args, *(format_namespaces.get(member,[]) for member,formatter in cls._formatters.items())]
+            kwargs_to_print = od(**unified_namespace)
+            print('\n###### Formatter args:\n', args_to_print)
+            print('\n###### Formatter kwargs:\n', kwargs_to_print)
+        return cls._prefix + cls._sep.join(formatter.format(*unified_args, *format_namespaces.get(member,()), **unified_namespace) for member,formatter in cls._formatters.items())
     def __iter__(cls):
         yield from cls._formatters.values()
         
