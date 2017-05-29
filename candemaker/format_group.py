@@ -65,29 +65,41 @@ class FormatGroupMeta(SpecialAttrsMeta):
         # pass each set of args and kwargs to the formatter type
         cls._formatters = {k:formatter for k,formatter in zip(formatter_defs,formatters)}
         cls.__init__(name,bases,mapping)
-    def format(cls, *args, _asdict=True, _nomappings=True, **unified_namespace):
-        '''Return formatted string using joined prefix, formatters, and separator.
-        Mapping objects can represent individual member namespaces and the values will be 
-        appended to the args of the member name matching the key.
+    def format(cls, *args, _asdict=True, _popmappings=True, **unified_namespace):
+        '''Return a combiend formatted string using joined formatter members.
         
-        _nomappings:
-            If True any Mapping object in args list is a member namespace. It will be 
-            separated out as appended args via the name of that member or method as a key.
+        Mapping objects can represent individual member argslists/namespaces and the values 
+        will be appended to the args of the member name matching the key.
+        
+        Additional keyword arguments are passed to all formatteras as a "universal namespace".
+        
+        _popmappings:
+            If True any Mapping object at the end of the args list is a member namespace. It will
+            be spun out as the args via the name of that member or method as a key.
         _asdict:
             If True any object in args list that includes an .asdict or ._asdict attribute will 
             be treated as a Mapping object via the name of that member or method as a key.'''
-        # namespaces to be passed to each formatter member on a per-member basis
-        format_namespaces = {}
-        if _nomappings:
-            # separate out any Mapping or .asdict/._asdict objects starting from the end of args
-            unified_args, kwargs_from_args = args_kwargs_from_args(args, slc=slice(-1,None,-1), asdict=_asdict, ignore_conflicts=True, terminate_on_failure=True)
-            # convert any single namespace arguments to an args list
-            format_namespaces.update(**{k:(a if not isinstance(a,str) and hasattr(a, '__iter__') else [a]) for k,a in kwargs_from_args.items()})
-            args_to_print = [*unified_args, *(format_namespaces.get(member,[]) for member,formatter in cls._formatters.items())]
-            kwargs_to_print = od(**unified_namespace)
-            print('\n###### Formatter args:\n', args_to_print)
-            print('\n###### Formatter kwargs:\n', kwargs_to_print)
-        return cls._prefix + cls._sep.join(formatter.format(*unified_args, *format_namespaces.get(member,()), **unified_namespace) for member,formatter in cls._formatters.items())
+        # optionally remove any mappings from the args list
+        if _popmappings:
+            # the slice of args in which to look for mappings (end to beginning) 
+            slc=slice(-1,None,-1)
+            # spin out any Mapping (or optionally .asdict/._asdict) objects starting from the end of args
+            args, kwargs_from_args = args_kwargs_from_args(args, slc=slc, asdict=_asdict, ignore_conflicts=True, terminate_on_failure=True)
+        else:
+            args, kwargs_from_args = args, {}
+        # argslist to be passed to each formatter member on a per-member basis
+        try:
+            # use unpacking to disallow multiple argslists to same member name
+            format_args = od(**kwargs_from_args, **od((k,a) for k,a in zip(cls._formatters, args)))
+        except TypeError as exc:
+            if 'multiple values for keyword argument' in str(exc):
+                key_conflict = next(k for k,_ in zip(cls._formatters, args) if k in kwargs_from_args)
+                raise TypeError('Multiple argument sets provided under member name: {}.'.format(key_conflict)) from None
+            else:
+                raise
+        # convert any single namespace arguments to an args list
+        format_args = od((k,(a if not isinstance(a,str) and hasattr(a, '__iter__') else [a])) for k,a in format_args.items())
+        return cls._prefix + cls._sep.join(formatter.format(*format_args.get(member,[]), **unified_namespace) for member,formatter in cls._formatters.items())
     def __iter__(cls):
         yield from cls._formatters.values()
         
