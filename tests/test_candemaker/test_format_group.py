@@ -104,9 +104,9 @@ def test_LineMakerMeta_prefix_set():
                     ('    3    -3.012 x', (3, float(-3.012), 'x')),
                     ('    3    -3.012 xlala', (3, float(-3.012), 'x', 'lala')),
                     ])
-def test_LineDefClass_parse(ALineDefClass, string, values):
+def test_LineDefClass_unformat(ALineDefClass, string, values):
     result = dict(zip(ALineDefClass, values))#{a:A, b:B, c:C}
-    test = ALineDefClass.parse(string)
+    test = ALineDefClass.unformat(string)
     assert test == result
 
 @pytest.mark.skip(reason="haven't decided whether/how to implement this")
@@ -114,7 +114,7 @@ def test_LineDefClass_parse(ALineDefClass, string, values):
                     ('    3,    -3.012, x', (3, float(-3.012), 'x')),
                     ('    3,    -3.012, x,lala', (3, float(-3.012), 'x', 'lala')),
                     ])
-def test_LineDefClass_parse_with_sep(ALineDefClassWithSep, string, values):
+def test_LineDefClass_unformat_with_sep(ALineDefClassWithSep, string, values):
     result = dict(zip(ALineDefClassWithSep, values))#{a:A, b:B, c:C}
-    test = ALineDefClassWithSep.parse(string)
+    test = ALineDefClassWithSep.unformat(string)
     assert test == result

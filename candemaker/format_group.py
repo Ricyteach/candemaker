@@ -100,6 +100,12 @@ class FormatGroupMeta(SpecialAttrsMeta):
         # convert any single namespace arguments to an args list
         format_args = od((k,(a if not isinstance(a,str) and hasattr(a, '__iter__') else [a])) for k,a in format_args.items())
         return cls._prefix + cls._sep.join(formatter.format(*format_args.get(member,[]), **unified_namespace) for member,formatter in cls._formatters.items())
+    def unformat(cls, string, evaluate_result=True):
+        '''Inverse of format. Match my format to the string exactly.
+
+        Return a Result or Match instance or None if there's no match.
+        '''
+        return NotImplemented
     def __iter__(cls):
         yield from cls._formatters.values()
         
