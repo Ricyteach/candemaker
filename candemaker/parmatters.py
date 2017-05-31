@@ -1,30 +1,38 @@
 from candemaker.utilities import args_kwargs_from_args
-from string import Formatter
-from abc import ABC
+import string
+import parse as _parse # avoid name conflicts with parse methods
+import parmatter
 
-class ArgsParseMixin(ABC):
-    '''A mixin for providing default arg parsing behavior.'''
+class ArgsParseMixin():
+    '''Provides default arg parsing behavior.'''
     @staticmethod
     def args_parse(*args):
         return args, {}
-
-class StaticFormatter(Formatter, ArgsParseMixin):
-    '''A formatter with a designated format string.'''
+        
+class ParmatterBase(parmatter.Parmatter, ArgsParseMixin):
+    '''A modified parsing formatter with arg_parse ability.'''
+    pass
+        
+class StaticParmatter(ParmatterBase):
+    '''A parsing formatter with a designated format string.'''
     def __init__(self, format_str, *args, **kwargs):
         self._format_str = format_str
+        self._parser = _parse.compile(self._format_str, dict(s=str))
         super().__init__(*args, **kwargs)
     def format(self, *args, **kwargs):
-        '''The format method has been overridden to change the signature.
-        Formmatting logic should be handled using get_value, format_field, etc.'''
+        '''ParmatterBase.format overridden to remove format_str from the signature.'''
         return super().format(self._format_str, *args, **kwargs)
+    def unformat(self, string):
+        '''ParmatterBase.unformat overridden to use compiled parser.'''
+        return self._parser.parse(string)
 
-class DefaultFormatter(Formatter, ArgsParseMixin):
-    '''A formatter with any default namespace.
+class DefaultParmatter(ParmatterBase):
+    '''A parsing formatter with any default namespace.
     
-    Use int for indexes of positional arguments, str
-    for keys of a mapping.'''
+    For keys use ints for indexes of positional arguments, strs
+    for fields with names.'''
     def __init__(self, default_namespace, *args, **kwargs):
-        self.default_namespace = default_namespace
+        self.default_namespace = default_namespace 
         super().__init__(*args, **kwargs)
     def get_value(self, key, args, kwargs):
         try:
@@ -37,8 +45,8 @@ class DefaultFormatter(Formatter, ArgsParseMixin):
                 lookup_type = {KeyError:'key', IndexError:'index'}[ExcType]
                 raise ExcType('No default argument was provided for this formatter, {} = {}.'.format(lookup_type, repr(key))) from None
             
-class AttrFormatter(Formatter, ArgsParseMixin):
-    '''A Formatter that looks in args object attributes for values.
+class AttrParmatter(ParmatterBase):
+    '''A Parmatter that looks in args object attributes for values.
     The args are inspected in order. First one wins. 
     Callable attributes are ignored.'''
     def get_value(self, key, args, kwargs):
@@ -77,10 +85,8 @@ class AttrFormatter(Formatter, ArgsParseMixin):
             raise ValueError('The name {} is both an attribute of first argument {} object and a key in the keyword arguments. Cannot resolve.'.format(key, type(args[0]).__name__))
         return  {value_norm:value_attr,value_attr:value_norm}[sentinel]
         
-class PositionalDefaultFormatter(DefaultFormatter):
-    '''A formatter with a default positional namespace.
-    Should probably be the first parent class when 
-    used in multiple inheritance.'''
+class PositionalDefaultParmatter(DefaultParmatter):
+    '''A formatter with a default positional namespace.'''
     def __init__(self, *values, default_namespace={}, **kwargs):
         default_namespace.update({i:value for i,value in enumerate(values)})
         super().__init__(default_namespace, **kwargs)
@@ -89,22 +95,22 @@ class PositionalDefaultFormatter(DefaultFormatter):
         '''Form an alternate argument order to create a formatter.
         
         args = '{}', 0,  {a=2, b=3}
-        args, kwargs = PositionalDefaultFormatter.arg_parse(*args)
-        f = PositionalDefaultFormatter(*args, **kwargs)
+        args, kwargs = PositionalDefaultParmatter.arg_parse(*args)
+        f = PositionalDefaultParmatter(*args, **kwargs)
         '''
         namespace_slice = slice(-1,None,-1)
         args, kwargs = args_kwargs_from_args(args, slc=namespace_slice, asdict=True, ignore_conflicts=True, terminate_on_failure=True)
         kwargs = dict(default_namespace = kwargs)
         return args, kwargs
         
-class KeywordFormatter(StaticFormatter,DefaultFormatter,AttrFormatter):
+class KeywordParmatter(StaticParmatter,DefaultParmatter,AttrParmatter):
     '''A static formatter with a default keyword namespace that looks in args object 
     attributes for values. The args are inspected in order. First one wins. 
     Callable attributes are ignored.'''
     def __init__(self, format_str, default_namespace, *args, **kwargs):
         super().__init__(format_str, default_namespace, *args, **kwargs)
     
-class VersatileFormatter(StaticFormatter,PositionalDefaultFormatter,AttrFormatter):
+class VersatileParmatter(StaticParmatter,PositionalDefaultParmatter,AttrParmatter):
     '''A static formatter with a default positional namespace that looks in args object 
     attributes for values. The args are inspected in order. First one wins. 
     Callable attributes are ignored.'''

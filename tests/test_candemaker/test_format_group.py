@@ -6,7 +6,7 @@ def test_LineMaker():
     assert LineMaker('EmptyLineDef')
     
 def test_basic_LineMaker():
-    assert LineMaker('BasicLineDef', a='{: 5>s}')
+    assert LineMaker('BasicLineDef', a='{: >5s}')
     
 @pytest.fixture
 def ALineDefClass():
@@ -65,7 +65,6 @@ def test_class_format_dict(ALineDefClass, ALineDefMembers):
     with pytest.raises(IndexError):
         ALineDefClass.format(dict(a=1))
 
-# @pytest.mark.current
 def test_class_format_mixture(ALineDefClass, ALineDefMembers, ABCD_namedtuple):
     a,b,c,d = ALineDefMembers
     a_nt = nt('A', 'a')(1)
@@ -81,7 +80,7 @@ def test_class_format_name_conflicts(ALineDefClass, ALineDefMembers, ABCD_namedt
     with pytest.raises(ValueError):
         ALineDefClass.format(abcd, **dict(b=331))
         
-@pytest.mark.skip(reason="haven't decided whether/how to implement this")
+@pytest.mark.skip(reason="haven't decided whether/how to disallow overflow of width for fields")
 def test_class_format_field_overflow(ALineDefClass, ALineDefMembers, ABCD_namedtuple):
     with pytest.raises(ValueError):
         ALineDefClass.format(dict(a=123456, d='d'))

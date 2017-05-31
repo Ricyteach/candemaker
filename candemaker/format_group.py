@@ -1,5 +1,5 @@
 from candemaker.utilities import update_special, set_item_if, args_kwargs_from_args
-from candemaker.formatters import VersatileFormatter
+from candemaker.parmatters import VersatileParmatter
 from collections import OrderedDict as od
 
 import sys
@@ -103,7 +103,7 @@ class FormatGroupMeta(SpecialAttrsMeta):
     def __iter__(cls):
         yield from cls._formatters.values()
         
-def FormatGroup(name, meta=FormatGroupMeta, formatter_type=VersatileFormatter, *, prefix = '', sep = '', **kwargs):
+def FormatGroup(name, meta=FormatGroupMeta, formatter_type=VersatileParmatter, *, prefix = '', sep = '', **kwargs):
     '''Factory for producing classes that define lines composed of formatting members 
     with optional line prefixes and separators between members. Formatter type must 
     provide a static args_parse() method with a signature of: 
