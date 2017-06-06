@@ -14,12 +14,6 @@ def ALineDefClass():
     ALineDef = LineMaker('ALineDef', a = '{: >5d}', b = ('{: >10f}', 0), c = ('{: >2s}', ''), d = '{}')
     return ALineDef
     
-@pytest.fixture
-def ALineDefClassWithSep():
-    '''For testing the LineMaker object with separators.'''
-    ALineDefWithSep = LineMaker('ALineDefWithSep', a = '{: >5d}', b = ('{: >10f}', 0), c = ('{: >2s}', ''), d = '{}', sep = ',')
-    return ALineDefWithSep
-    
 @pytest.fixture()
 def ALineDefMembers(ALineDefClass, scope='function'):
     '''For testing the LineMaker object.'''
@@ -99,22 +93,22 @@ def test_LineMakerMeta_prefix_set():
     LineDef._prefix = ''
     assert LineDef.format(dict(a=1, b=1)) == '1    1'
     
-@pytest.mark.skip(reason="haven't decided whether/how to implement this")
-@pytest.mark.parametrize('string, values',[
-                    ('    3    -3.012 x', (3, float(-3.012), 'x')),
-                    ('    3    -3.012 xlala', (3, float(-3.012), 'x', 'lala')),
+#NOTE: the parse module seems to have some trouble with string fields and spaces around them. don't implicitly trust it. 
+@pytest.mark.parametrize('string, format_string, values',[
+                    ('    3    -3.012 4 5', '{: >5d}{: >10f}{: >2d}{: >2d}', (3, float(-3.012), 4, 5)),
+                    ('    3    -3.012 4 5', '{: >5d}{: >10f}{: >2d}{: >2d}', (3, float(-3.012), 4, 5)),
                     ])
-def test_LineDefClass_parse(ALineDefClass, string, values):
-    result = dict(zip(ALineDefClass, values))#{a:A, b:B, c:C}
-    test = ALineDefClass.parse(string)
-    assert test == result
+def test_LineDefClass_unformat(string, format_string, values):
+    ALineDefClass = LineMaker('ALineDefClass', a = '{: >5d}', b = ('{: >10f}', 0), c = ('{: >2d}', ''), d = '{: >2d}')
+    assert format_string == ALineDefClass._prefix+ALineDefClass._sep.join(member._format_str for member in ALineDefClass)
+    test = tuple(ALineDefClass.unformat(string))
+    assert test == values
 
-@pytest.mark.skip(reason="haven't decided whether/how to implement this")
-@pytest.mark.parametrize('string, values',[
-                    ('    3,    -3.012, x', (3, float(-3.012), 'x')),
-                    ('    3,    -3.012, x,lala', (3, float(-3.012), 'x', 'lala')),
+@pytest.mark.parametrize('cls, format_string, string, values',[
+                    (LineMaker('cls', a = '{: >5d}', b = ('{: >10f}', 0), c = ('{: >2d}', ''), sep = ','), '{: >5d},{: >10f},{: >2d}', '    3,    -3.012, 4', (3, float(-3.012), 4)),
+                    (LineMaker('cls', a = '{: >5d}', b = ('{: >10f}', 0), c = ('{: >2s}', ''), sep = ','), '{: >5d},{: >10f},{: >2s}', '    3,    -3.012, foo', (3, float(-3.012), 'foo')),
                     ])
-def test_LineDefClass_parse_with_sep(ALineDefClassWithSep, string, values):
-    result = dict(zip(ALineDefClassWithSep, values))#{a:A, b:B, c:C}
-    test = ALineDefClassWithSep.parse(string)
-    assert test == result
+def test_LineDefClass_unformat_with_sep(cls, format_string, string, values):
+    assert format_string == cls._prefix+cls._sep.join(member._format_str for member in cls)
+    test = tuple(cls.unformat(string))
+    assert test == values

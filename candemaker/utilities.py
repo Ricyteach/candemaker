@@ -84,3 +84,30 @@ def args_kwargs_from_args(args, slc=slice(0,None), asdict=True, ignore_conflicts
     args = [args[i] for i in range(len(args)) if i not in remove_i]
     return args, kwargs
 
+def auto_save_as(filepath, saveaspath = None, ext = None):
+    '''Provides a path-like object for saving a filepath under a new path.
+    
+    Will use the provided ext for the new file extension.
+    If no saveaspath is provided, the same input file name is used; the input file extension
+    will also be used if one is not provided. 
+    If saveaspath is provided with no extension, the saveaspath is assumed to be directory.'''
+    
+    if saveaspath is None:
+        savedir = filepath.parent
+        savename = filepath.stem
+        if ext is None:
+            ext = filepath.suffix
+    else:
+        if saveaspath.suffix == '':
+            savedir = saveaspath
+            savename = filepath.stem
+            ext = saveaspath.suffix
+        else:
+            savedir = saveaspath.parent
+            savename = saveaspath.stem
+            if ext != saveaspath.suffix:
+                raise ValueError('Cannot resolve conflicting save as extensions.')
+
+    savefile = type(saveaspath)(savename).with_suffix(ext)
+    return savedir/savefile
+    

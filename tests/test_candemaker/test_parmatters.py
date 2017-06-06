@@ -69,7 +69,6 @@ def test_StaticParmatter_parse():
     assert f.format(1) == '    1'
     assert list(f.unformat('    1')) == [1]
 
-@pytest.mark.skip(reason="haven't decided whether/how to implement this")
 @pytest.mark.parametrize('format, string, values',[
                     ('{: >5d}{: >10.3f}{: >2s}', '    3    -3.012 x', (3, float(-3.012), 'x')),
                     ('{: >5d}{: >10.3f}{: >2s}{: >4s}', '    3    -3.012 xlala', (3, float(-3.012), 'x', 'lala')),
