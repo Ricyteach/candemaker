@@ -1,6 +1,7 @@
 from candemaker.utilities import args_kwargs_from_args
 import string
 import parse as _parse # avoid name conflicts with parse methods
+#NOTE: the parse module has a lot of trouble with string fields and spaces around them. don't implicitly trust it. 
 import parmatter
 
 class ArgsParseMixin():

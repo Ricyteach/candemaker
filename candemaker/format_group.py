@@ -1,6 +1,7 @@
 from candemaker.utilities import update_special, set_item_if, args_kwargs_from_args
 from candemaker.parmatters import VersatileParmatter
 from collections import OrderedDict as od
+import parse
 
 import sys
 assert (sys.version_info)>(3,6)
@@ -66,7 +67,7 @@ class FormatGroupMeta(SpecialAttrsMeta):
         cls._formatters = {k:formatter for k,formatter in zip(formatter_defs,formatters)}
         cls.__init__(name,bases,mapping)
     def format(cls, *args, _asdict=True, _popmappings=True, **unified_namespace):
-        '''Return a combiend formatted string using joined formatter members.
+        '''Return a combined formatted string using joined formatter members.
         
         Mapping objects can represent individual member argslists/namespaces and the values 
         will be appended to the args of the member name matching the key.
@@ -101,11 +102,12 @@ class FormatGroupMeta(SpecialAttrsMeta):
         format_args = od((k,(a if not isinstance(a,str) and hasattr(a, '__iter__') else [a])) for k,a in format_args.items())
         return cls._prefix + cls._sep.join(formatter.format(*format_args.get(member,[]), **unified_namespace) for member,formatter in cls._formatters.items())
     def unformat(cls, string, evaluate_result=True):
-        '''Inverse of format. Match my format to the string exactly.
+        '''Inverse of format. Match my format group to the string exactly.
 
-        Return a Result or Match instance or None if there's no match.
+        Return a parse.Result or parse.Match instance or None if there's no match.
         '''
-        return NotImplemented
+        fmat_str = cls._prefix + cls._sep.join(member._format_str for member in cls)
+        return parse.parse(fmat_str, string, dict(s=str), evaluate_result=evaluate_result)
     def __iter__(cls):
         yield from cls._formatters.values()
         

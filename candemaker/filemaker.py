@@ -1,46 +1,19 @@
-def auto_save_as(filepath, saveaspath = None, ext = None):
-    '''Provides a path-like object for saving a filepath under a new path.
-    
-    Will use the provided ext for the new file extension.
-    If no saveaspath is provided, the same input file name is used; the input file extension
-    will also be used if one is not provided. 
-    If saveaspath is provided with no extension, the saveaspath is assumed to be directory.'''
-    
-    if saveaspath is None:
-        savedir = filepath.parent
-        savename = filepath.stem
-        if ext is None:
-            ext = filepath.suffix
-    else:
-        if saveaspath.suffix == '':
-            savedir = saveaspath
-            savename = filepath.stem
-            ext = saveaspath.suffix
-        else:
-            savedir = saveaspath.parent
-            savename = saveaspath.stem
-            if ext != saveaspath.suffix:
-                raise ValueError('Cannot resolve conflicting save as extensions.')
-
-    savefile = type(saveaspath)(savename).with_suffix(ext)
-    return savedir/savefile
-    
 class FileOut():
-    '''An object that provides a file exporting interface for any iterable object.'''
+    '''Provides a file exporting interface compatible with the pathlib.Path API 
+    for any iterable object.'''
     def __init__(self, obj, path = None, *, mode = 'w', obj_iter = None):
         self.obj = obj
         self.path = path
         self.mode = mode
-        if obj_iter is None:
-            try:
-                self.obj_iter = obj.__iter__
-            except AttributeError:
-                raise TypeError('The obj must be iterable, or an obj_iter method parameter must be provided.')
-        else:
-            self.obj_iter = obj_iter
+        try:
+            self._iter = obj.__iter__
+        except AttributeError:
+            raise TypeError('The obj is not iterable.') from None
     def to_str(self):
-        return '\n'.join(self.obj_iter())
+        '''Export the object to a string.'''
+        return '\n'.join(self._iter())
     def to_stream(self, fstream):
+        '''Export the object to provided stream.'''
         fstream.write(self.to_str())
     def __enter__(self):
         try:
