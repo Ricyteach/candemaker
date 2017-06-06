@@ -17,8 +17,8 @@ class CountLine(metaclass=MSH_formatter):
         
 class NodeLine(metaclass=MSH_formatter):
     Num = Pardef(ld, 0)
-    x = Pardef(lf, 0)
-    y = Pardef(lf, 0)
+    X = Pardef(lf, 0)
+    Y = Pardef(lf, 0)
     
 class ElementLine(metaclass=MSH_formatter):
     Num = Pardef(ld, 0)
