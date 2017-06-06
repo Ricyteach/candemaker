@@ -1,6 +1,6 @@
 from candemaker.utilities import update_special, set_item_if, args_kwargs_from_args
 from candemaker.parmatters import VersatileParmatter
-from collections import OrderedDict as od
+from collections import OrderedDict as od, namedtuple as nt
 import parse
 
 import sys
@@ -107,7 +107,23 @@ class FormatGroupMeta(SpecialAttrsMeta):
         Return a parse.Result or parse.Match instance or None if there's no match.
         '''
         fmat_str = cls._prefix + cls._sep.join(member._format_str for member in cls)
-        return parse.parse(fmat_str, string, dict(s=str), evaluate_result=evaluate_result)
+        result = parse.parse(fmat_str, string, dict(s=str), evaluate_result=evaluate_result)
+        # replace default output tuple with namedtuple
+        if result.fixed:
+            result.fixed=list(result.fixed)
+            def is_positional_field(member_parse):
+                return member_parse[1:3]!=(None,None) and (member_parse[1] == '' or parse.parse('{:d}',member_parse[1]) is not None or parse.parse('{:d}{}',member_parse[1]) is not None)
+            fixed_counts=[len([member_parse for member_parse in member.parse(member._format_str) if is_positional_field(member_parse)]) for member in cls]
+            results=[]
+            for count in fixed_counts:
+                r=[]
+                for _ in range(count):
+                    r.append(result.fixed.pop(0))
+                results.append(r)
+            NT=nt(cls.__name__+'Data', ' '.join(cls._formatters))
+            result.fixed=NT(*(r if len(r)>1 else r[0] for r in results))
+        return result
+        
     def __iter__(cls):
         yield from cls._formatters.values()
         
