@@ -33,7 +33,7 @@ class C3(metaclass=CANDE_formatter):
     BasicGenerationCode = Pardef(d1, 0)
     X = Pardef(f10, 0)
     Y = Pardef(f10, 0)
-    Increment = Pardef(d5+'     ', 0)
+    Increment = Pardef(d5, 0)
     Spacing = Pardef(f10, 0)
     Radius = Pardef(f10, 0)
 
