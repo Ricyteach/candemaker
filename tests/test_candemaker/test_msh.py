@@ -7,7 +7,6 @@ path=Path('tests\\test_candemaker\\test_mesh.msh')
 @pytest.mark.current
 def test_read_msh():
     mesh=read_msh(path)
-    assert mesh
-    '''
+    assert tuple(len(member) for member in mesh) == (641, 588, 156)
     with pytest.raises(ValueError):
-        read_msh(path,validate=True)'''
+        read_msh(path,validate=True)
