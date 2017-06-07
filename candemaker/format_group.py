@@ -109,7 +109,7 @@ class FormatGroupMeta(SpecialAttrsMeta):
         fmat_str = cls._prefix + cls._sep.join(member._format_str for member in cls)
         result = parse.parse(fmat_str, string, dict(s=str), evaluate_result=evaluate_result)
         # replace default output tuple with namedtuple
-        if result.fixed:
+        if result is not None and result.fixed:
             result.fixed=list(result.fixed)
             def is_positional_field(member_parse):
                 return member_parse[1:3]!=(None,None) and (member_parse[1] == '' or parse.parse('{:d}',member_parse[1]) is not None or parse.parse('{:d}{}',member_parse[1]) is not None)
