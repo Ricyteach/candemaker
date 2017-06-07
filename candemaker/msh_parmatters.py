@@ -9,7 +9,7 @@ lf = '{:<f}'
 
 class MSH_formatter(FormatGroupMeta):
     _formatter_type = VersatileParmatter
-    _sep = '    '
+    _sep = ' '
     _prefix = ''
 
 class CountLine(metaclass=MSH_formatter):
