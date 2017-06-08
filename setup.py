@@ -24,12 +24,12 @@ def read(*names, **kwargs):
 setup(
     name = 'candemaker',
     version = '0.0.1',
+	url='https://github.com/Ricyteach/candemaker',
     author = 'Rick Teachey',
     author_email = 'rickteachey@cbceng.com',
     description = ('Tools for creating CANDE input files (.cid).'),
 	license = 'BSD',
     keywords = 'cid msh CANDE fea',
-    url = 'cbceng.com',
 	package_dir={'':'src'},
     packages=find_packages('src', exclude=['*.tests', '*.tests.*', 'tests.*', 'tests']),
     scripts=['scripts/test_script.bat'],
