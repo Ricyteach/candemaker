@@ -1,4 +1,4 @@
-from candemaker.cid_parmatters import Pardef, s1, d1, d3, d4, d5, f10, prefix_spec, CANDE_formatter
+from .cid_parmatters import Pardef, s1, d1, d3, d4, d5, f10, CANDE_formatter
 
 prefix_spec = '{: >22s}.L3!!'
 

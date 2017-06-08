@@ -1,5 +1,4 @@
-from candemaker.format_group import FormatGroupMeta
-from candemaker.parmatters import VersatileParmatter
+from parmatter import FormatGroupMeta, VersatileParmatter
 from collections import namedtuple as nt
 
 # for parmatter definitions

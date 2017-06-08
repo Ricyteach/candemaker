@@ -1,6 +1,6 @@
 from collections import namedtuple as nt
-from candemaker.unformat_file import unformat_file
-from candemaker.msh_parmatters import CountLine, NodeLine, ElementLine, BoundaryLine
+from parmatter import unformat_file
+from .msh_parmatters import CountLine, NodeLine, ElementLine, BoundaryLine
 
 Mesh = nt('Mesh', 'nodes elements boundaries')
 
