@@ -3,34 +3,34 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import re
-
 from setuptools import find_packages
 from setuptools import setup
+import pathlib
 
+def _read(path):
+    with open(path) as f:
+        return f.read()
 
-def _read(file):
-    with open(file, 'rb') as fp:
-        return fp.read()
-        
+name = 'candemaker'
+project_info = {}
+exec(_read(pathlib.Path()/'src'/name/'__version__.py'), project_info)
+	
 setup(
-    name = 'candemaker',
-    version = '0.0.1',
-	url='https://github.com/Ricyteach/candemaker',
-    author = 'Rick Teachey',
-    author_email = 'rickteachey@cbceng.com',
-    description = ('Tools for creating CANDE input files (.cid).'),
-	license = 'BSD',
-    keywords = 'cid msh CANDE fea',
+    name=project_info['__title__'],
+    version=project_info['__version__'],
+    description=project_info['__description__'],
+    author=project_info['__author__'],
+    author_email=project_info['__author_email__'],
+    url=project_info['__url__'],
+    license=project_info['__license__'],
+    keywords = project_info['__keywords__'],
+	python_requires='>=3',
 	package_dir={'':'src'},
-    packages=find_packages('src', exclude=['*.tests', '*.tests.*', 'tests.*', 'tests']),
+    packages=find_packages(where='src', exclude=['*.tests', '*.tests.*', 'tests.*', 'tests']),
     scripts=['scripts/test_script.bat'],
     install_requires=['parmatter'],
     include_package_data=True,
-    long_description='%s\n%s' % (
-        re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', _read('README.rst').decode('utf-8')),
-        re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', _read('CHANGELOG.rst').decode('utf-8'))
-    ),
+    long_description='{:s}\n\n{:s}'.format(_read('README.rst'), _read('CHANGELOG.rst')),
     classifiers=[
         'Development Status :: 1 - Planning',
         # 'Development Status :: 2 - Pre-Alpha',
