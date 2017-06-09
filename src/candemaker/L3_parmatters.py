@@ -2,6 +2,13 @@ from .cid_parmatters import Pardef, s1, d1, d3, d4, d5, f10, CANDE_formatter
 
 prefix_spec = '{: >22s}.L3!!'
 
+class A2(metaclass=CANDE_formatter):
+    _prefix = prefix_spec.format('A-2')
+    # Options:
+    # ALUMINUM, BASIC, CONCRETE, PLASTIC, STEEL, CONRIB, CONTUBE
+    PipeType = Pardef('{: <10s}', 'NO_DEFAULT')
+    Num = Pardef('{: >5d}', 0)
+
 class C1(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('C-1')
     Prep = Pardef('{: <5s}', 'PREP')
