@@ -1,4 +1,5 @@
 from .parmatters import prefix_spec, Pardef, d2, d4, s20, s1, d5, f10, CANDE_formatter
+from .blank import BlankInt
 
 class D1(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('D-1')
@@ -9,7 +10,7 @@ class D1(metaclass=CANDE_formatter):
     Model = Pardef(d5, 1)
     Density = Pardef(f10, 0)
     Name = Pardef(s20, '')
-    Layers = Pardef(d2, 0) # overburden model only
+    Layers = Pardef(d2, BlankInt()) # overburden model only
     
 class D2Isotropic(metaclass=CANDE_formatter):
     # only for Model = 1

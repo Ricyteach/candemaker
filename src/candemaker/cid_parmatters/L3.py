@@ -1,4 +1,5 @@
 from .parmatters import Pardef, s1, d1, d3, d4, d5, f10, CANDE_formatter
+from .blank import BlankInt
 
 prefix_spec = '{: >22s}.L3!!'
 
@@ -35,14 +36,14 @@ class C3(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('C-3')
     Limit = Pardef(s1, ' ')
     Num = Pardef(d4, 0)
-    SpecialReferenceCode = Pardef(d3, 0)
-    SpecialGenerationCode = Pardef(d1, 0)
-    BasicGenerationCode = Pardef(d1, 0)
+    SpecialReferenceCode = Pardef(d3, BlankInt())
+    SpecialGenerationCode = Pardef(d1, BlankInt())
+    BasicGenerationCode = Pardef(d1, BlankInt())
     X = Pardef(f10, 0)
     Y = Pardef(f10, 0)
-    Increment = Pardef(d5, 0)
-    Spacing = Pardef(f10, 0)
-    Radius = Pardef(f10, 0)
+    Increment = Pardef(d5, BlankInt())
+    Spacing = Pardef(f10, BlankInt())
+    Radius = Pardef(f10, BlankInt())
 
 class C4(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('C-4')
@@ -55,12 +56,12 @@ class C4(metaclass=CANDE_formatter):
     I = Pardef(d5, 0)
     Mat = Pardef(d5, 0)
     Step = Pardef(d5, 0)
-    # 1 for interface, 8 for link element fixed, 9 for link element pinned
-    InterfLink = Pardef(d5, 1)
-    IncrementAdded = Pardef(d5, 1)
-    RowsAdded = Pardef(d5, 1)
-    IncrementBetween = Pardef(d5, 0)
-    Death = Pardef(d5, 100)
+    # 0 for normal, 1 for interface, 8 for link element fixed, 9 for link element pinned
+    InterfLink = Pardef(d5, BlankInt())
+    IncrementAdded = Pardef(d5, BlankInt())
+    RowsAdded = Pardef(d5, BlankInt())
+    IncrementBetween = Pardef(d5, BlankInt())
+    Death = Pardef(d5, BlankInt())
     
 class C5(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('C-5')
@@ -72,7 +73,7 @@ class C5(metaclass=CANDE_formatter):
     Yvalue = Pardef(f10, 0)
     Angle = Pardef(f10, 0)
     Step = Pardef(d5, 0)
-    EndNode = Pardef(d5, 0)
-    Increment = Pardef(d5, 0)
-    Pressure1 = Pardef(f10, 0)
-    Pressure2 = Pardef(f10, 0)
+    EndNode = Pardef(d5, BlankInt())
+    Increment = Pardef(d5, BlankInt())
+    Pressure1 = Pardef(f10, BlankInt())
+    Pressure2 = Pardef(f10, BlankInt())
