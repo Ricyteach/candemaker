@@ -1,7 +1,6 @@
 from ..cid_parmatters import prefix_spec, Pardef, s10, d5, f10, CANDE_formatter
 
-types = 'alum basic concrete plastic steel'.split()
-modules = (t+'_parmatters' for t in types)
+modules = 'alum basic concrete plastic steel'.split()
 for m in modules:
     exec('from .{} import __dict__ as d'.format(m))
     for obj in d:
