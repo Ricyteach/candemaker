@@ -1,1 +1,1 @@
-from .cid_parmatters import A1, E1
+from .parmatters import A1, E1

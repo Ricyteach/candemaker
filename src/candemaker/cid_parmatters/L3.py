@@ -1,4 +1,4 @@
-from .cid_parmatters import Pardef, s1, d1, d3, d4, d5, f10, CANDE_formatter
+from .parmatters import Pardef, s1, d1, d3, d4, d5, f10, CANDE_formatter
 
 prefix_spec = '{: >22s}.L3!!'
 

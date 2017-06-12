@@ -1,4 +1,4 @@
-from ..cid_parmatters import prefix_spec, Pardef, s10, d5, f10, CANDE_formatter
+from ..parmatters import prefix_spec, Pardef, s10, d5, f10, CANDE_formatter
 
 modules = 'alum basic concrete plastic steel'.split()
 for m in modules:
@@ -10,4 +10,3 @@ for m in modules:
     
 del m
 del modules
-del types

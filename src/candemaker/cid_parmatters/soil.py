@@ -1,4 +1,4 @@
-from .cid_parmatters import prefix_spec, Pardef, d2, d4, s20, s1, d5, f10, CANDE_formatter
+from .parmatters import prefix_spec, Pardef, d2, d4, s20, s1, d5, f10, CANDE_formatter
 
 class D1(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('D-1')
