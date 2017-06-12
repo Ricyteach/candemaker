@@ -1,5 +1,5 @@
 from .parmatters import Pardef, s1, d1, d3, d4, d5, f10, CANDE_formatter
-from .blank import BlankInt
+from .blank import BlankInt, BlankFloat
 
 prefix_spec = '{: >22s}.L3!!'
 
@@ -42,8 +42,8 @@ class C3(metaclass=CANDE_formatter):
     X = Pardef(f10, 0)
     Y = Pardef(f10, 0)
     Increment = Pardef(d5, BlankInt())
-    Spacing = Pardef(f10, BlankInt())
-    Radius = Pardef(f10, BlankInt())
+    Spacing = Pardef(f10, BlankFloat())
+    Radius = Pardef(f10, BlankFloat())
 
 class C4(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('C-4')
@@ -75,5 +75,5 @@ class C5(metaclass=CANDE_formatter):
     Step = Pardef(d5, 0)
     EndNode = Pardef(d5, BlankInt())
     Increment = Pardef(d5, BlankInt())
-    Pressure1 = Pardef(f10, BlankInt())
-    Pressure2 = Pardef(f10, BlankInt())
+    Pressure1 = Pardef(f10, BlankFloat())
+    Pressure2 = Pardef(f10, BlankFloat())
