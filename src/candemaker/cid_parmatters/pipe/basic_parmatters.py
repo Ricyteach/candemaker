@@ -1,4 +1,4 @@
-from ..cid_parmatters import Pardef, d5, f10, CANDE_formatter
+from . import prefix_spec, Pardef, d5, f10, CANDE_formatter
 
 class B1Basic(metaclass=CANDE_formatter):
     # ANALYS only

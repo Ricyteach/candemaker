@@ -1,4 +1,4 @@
-from ..cid_parmatters import Pardef, d5, f10, CANDE_formatter
+from . import prefix_spec, Pardef, d5, f10, CANDE_formatter
 
 d4 = '{: >4d}'
 f4 = '{: >4f}'
@@ -53,7 +53,7 @@ class B2bSteel(metaclass=CANDE_formatter):
     # use if JointSlip>0
     _prefix = prefix_spec.format('B-2b.Steel')
     Slip = Pardef(f10, 4950) # psi
-    Yield = Pardef(f10, 33E3) psi
+    Yield = Pardef(f10, 33E3) # psi
     SlipRatio = Pardef(f10, 0.0003)
     PostSlipRatio = Pardef(f10, 0.5)
     YieldRatio = Pardef(f10, 0)
