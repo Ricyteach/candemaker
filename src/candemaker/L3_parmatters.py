@@ -12,7 +12,7 @@ class A2(metaclass=CANDE_formatter):
 class C1(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('C-1')
     Prep = Pardef('{: <5s}', 'PREP')
-    Title = Pardef('{: <67s}', '')
+    Title = Pardef('{: <68s}', '')
 
 class C2(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('C-2')
@@ -22,7 +22,7 @@ class C2(metaclass=CANDE_formatter):
     Check = Pardef(d5, 1) # 0: run, 1: check
     PlotControl = Pardef(d5, 3) # always 3
     # 0: minimal, 1: standard, 2: plus Duncan, 3: plus interface, 4: plus Mohr Coulomb
-    ResponseOutput = Pardef(d5, 1)
+    ResponseOutput = Pardef(d5, 0)
     Nodes = Pardef(d5, 0)
     Elements = Pardef(d5, 0)
     Boundaries = Pardef(d5, 0)

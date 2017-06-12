@@ -4,6 +4,10 @@ from collections import namedtuple as nt
 # for parmatter definitions
 Pardef = nt('Pardef', 'spec default')
 s1 = '{: >1s}'
+s5 = '{: <5s}'
+s10 = '{: <10s}'
+s20 = '{: <20s}'
+s60 = '{: <60s}'
 d1 = '{: >1d}'
 d2 = '{: >2d}'
 d3 = '{: >3d}'
@@ -18,26 +22,16 @@ class CANDE_formatter(FormatGroupMeta):
 
 class A1(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('A-1')
+    # ANALYS or DESIGN
     Mode = Pardef('{: <8s}', 'ANALYS')
     Level = Pardef(d2, 3)
     Method = Pardef(d2, 1)
     Groups = Pardef(d3, 1)
-    Heading = Pardef('{: <60s}', '')
+    Heading = Pardef(s60, '')
     Iterations = Pardef(d5, -99)
     CulvertID = Pardef(d5, 0)
     ProcessID = Pardef(d5, 0)
     SubdomainID = Pardef(d5, 0)
-
-class D1(metaclass=CANDE_formatter):
-    _prefix = prefix_spec.format('D-1')
-    Limit = Pardef(s1, ' ')
-    ID = Pardef(d4, 0)
-    # 1: isotropic, 2: orthotropic, 3: Duncan/Seling, 4: Overburden Dependent,
-    # 5: Extended Hardin, 6: Interface, 7: Composite Link, 8: Mohr/Coulomb
-    Model = Pardef(d5, 1)
-    Density = Pardef(f10, 0)
-    Name = Pardef('{: <20s}', '')
-    Layers = Pardef(d2, 0)
     
 class E1(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('E-1')
