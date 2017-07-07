@@ -6,9 +6,10 @@ def A2_gen(cid, struct):
     if len(struct) < 2:
         raise CIDError('A2 should only be applied to the '
                        'second line or later')
-    for group, num in enumerate(cid.groups, 1):
+    for num, idx in enumerate(range(cid.ngroups), 1):
         try:
             yield PipeGroup
+            group = cid.groups[idx]
             try:
                 typ = group.Type
                 gen = pipe.pipe_parse_dict[typ]
@@ -33,31 +34,35 @@ def C2_gen(cid, struct):
         raise CIDError('L3.C2 should only be applied to '
                        'level 3 cid files')
     yield L3Control
-    for cid_objs, gen, name in ((cid.nodes, C3_gen, 'node'),
-                                (cid.beams, C4_gen, 'beam'),
-                                (cid.soil_elements, C4_gen, 'soil element'),
-                                (cid.interf_elements, C4_gen, 'interf element'),
-                                (cid.bounds, C5_gen, 'fixed boundary'),
-                                (cid.forces, C5_gen, 'force boundary')):
-        for cid_obj, num in enumerate(cid_objs, 1):
+    from .soil import D1Soil_gen, D1Interf_gen
+    for n_objs, gen, name in ((cid.nnodes, C3_gen, 'node'),
+                              (cid.nelements, C4_gen, 'element'),
+                              (cid.nbounds, C5_gen, 'boundary'),
+                              (cid.nsoil_materials, D1Soil_gen, 'soil material'),
+                              (cid.ninterf_materials, D1Interf_gen, 'interf material')):
+        for cid_obj_num, cid_obj_idx in enumerate(range(n_objs), 1):
             try:
-                yield from gen(cid, struct, cid_obj)
+                yield from gen(cid, struct, cid_obj_num)
             except Exception as e:
                 raise CIDError('Parse failed at {} #'
-                               '{:d}'.format(name, num)) from e
+                               '{:d}'.format(name, cid_obj_num)) from e
+    if cid.method == 1: #  LRFD
+        from .general import E1_gen
+        for step_num, _ in enumerate(range(cid.nsteps), 1):
+            yield from E1_gen(cid, struct)
 
 
-def C3_gen(cid, struct, node):
-    yield NodeLast if node.Num == cid.nnodes else Node
+def C3_gen(cid, struct, node_num):
+    yield NodeLast if node_num == cid.nnodes else Node
 
 
-def C4_gen(cid, struct, element):
-    yield ElementLast if element.Num == cid.nelements else Element
+def C4_gen(cid, struct, element_num):
+    yield ElementLast if element_num == cid.nelements else Element
 
 
-def C5_gen(cid, struct, bound):
-    yield BoundLast if bound.Num == cid.nbounds else Bound
-    
+def C5_gen(cid, struct, bound_num):
+    yield BoundLast if bound_num == cid.nbounds else Bound
+
 
 def register_objects():
     from collections import namedtuple as nt
@@ -191,30 +196,32 @@ def register_objects():
         NT._prefix = prefix_spec.format('C-5')
         NT._name = 'C5'
 
-    for obj, d, gen in  ( (PipeGroup, pipe_group_dict, A2_gen),
-                    (L3Info, L3_info_dict, C1_gen),
-                    (L3Control, L3_control_dict, C2_gen),
-                    (Node, node_dict, C3_gen),
-                    (NodeLast, node_dict, C3_gen),
-                    (Element, element_dict, C4_gen),
-                    (TriaElement, element_dict, C4_gen),
-                    (QuadElement, element_dict, C4_gen),
-                    (SoilElement, element_dict, C4_gen),
-                    (BeamElement, element_dict, C4_gen),
-                    (InterfElement, element_dict, C4_gen),
-                    (ElementLast, element_dict, C4_gen),
-                    (Bound, bound_dict, C5_gen),
-                    (ForceBound, bound_dict, C5_gen),
-                    (SideBound, bound_dict, C5_gen),
-                    (BotBound, bound_dict, C5_gen),
-                    (CornerBound, bound_dict, C5_gen),
-                    (BoundLast, bound_dict, C5_gen)
-                    ):
+    for obj, d, gen in ((PipeGroup, pipe_group_dict, A2_gen),
+                        (L3Info, L3_info_dict, C1_gen),
+                        (L3Control, L3_control_dict, C2_gen),
+                        (Node, node_dict, C3_gen),
+                        (NodeLast, node_dict, C3_gen),
+                        (Element, element_dict, C4_gen),
+                        (TriaElement, element_dict, C4_gen),
+                        (QuadElement, element_dict, C4_gen),
+                        (SoilElement, element_dict, C4_gen),    
+                        (BeamElement, element_dict, C4_gen),
+                        (InterfElement, element_dict, C4_gen),
+                        (ElementLast, element_dict, C4_gen),
+                        (Bound, bound_dict, C5_gen),
+                        (ForceBound, bound_dict, C5_gen),
+                        (SideBound, bound_dict, C5_gen),
+                        (BotBound, bound_dict, C5_gen),
+                        (CornerBound, bound_dict, C5_gen),
+                        (BoundLast, bound_dict, C5_gen)
+                        ):
         add_specs_defaults_to_nts(obj, d)
         register(obj, d, gen)
         yield obj
 
 for obj in register_objects():
+    print(obj.__name__, obj)
+    input('\n')
     exec('{} = obj'.format(obj.__name__))
 
 del register_objects

@@ -2,33 +2,38 @@ from . import CIDError
 from ..cid import register
 
 
-def D1_gen(cid, struct):
-    D1_objs = ((Material, MaterialLast), (Overburden, OverburdenLast))
-    D_gens = (None, Isotropic_gen, Orthotropic_gen, Duncan_gen, 
-              Overburden_gen, Hardin_gen, Interface_gen, Composite_gen,
-              MohrCoulomb_gen)
-    for material in cid.soil_materials:
-        if material.Model not in range(1, 9):
-            raise CIDError('Invalid model number {:d} for material #{:d}'
-                           ''.format(material.Model, material.ID))
-        if material.Model in (7, 8): #  Interface or Composite
-            raise CIDError('Interface or composite model number'
-                           'found in soil material #{:d}'.format(material.ID))
-        yield D1_objs[bool(material.layers)][material.ID==cid.nsoil_materials]
-        yield from D_gens[material.Model](material)
-    for material in cid.interf_materials:
-        if material.Model == 8:
-            return NotImplemented
-        if material.Model not in range(7, 8):
-            raise CIDError('Non-interface or -composite model number ({:d})'
-                           'found in interf material #{:d}'
-                           ''.format(material.Model, material.ID))
-        yield from Interface_gen(material)
+def D1Soil_gen(cid, struct, material_num):
+    if cid.ninterf_materials == 0 and material_num == cid.nsoil_materials:
+        yield SoilMaterialLast
+    else:
+        yield SoilMaterial
+    material = cid.soil_materials[material_num-1]
+    if material.Model not in range(1, 9):
+        raise CIDError('Invalid model number {:d} for material #{:d}'
+                       ''.format(material.Model, material.ID))
+    if material.Model in (7, 8): #  Interface or Composite
+        raise CIDError('Interface or composite model number'
+                       'found in soil material #{:d}'.format(material.ID))
+    yield from D_gens[material.Model](material)
+
+def D1Interf_gen(cid, struct, material_num):
+    if material_num == cid.ninterf_materials:
+        yield InterfMaterialLast
+    else:
+        yield InterfMaterial
+    material = cid.interf_materials[material_num-1]
+    if material.Model == 8:
+        return NotImplemented
+    if material.Model not in range(7, 8):
+        raise CIDError('Non-interface or -composite model number ({:d})'
+                       'found in interf material #{:d}'
+                       ''.format(material.Model, material.ID))
+    yield from Interface_gen(material)
 
 
 # probably don't ever need these models
-(Orthotropic_gen, Duncan_gen, Overburden_gen,
-Hardin_gen, Composite_gen) = (None,)*5
+(Orthotropic_gen, Overburden_gen, Hardin_gen,
+HardinTRIA_gen, Composite_gen) = (None,)*5
 
 
 def MohrCoulomb_gen(material):
@@ -89,12 +94,12 @@ def register_objects():
                             Layers = ObjDef(fs.d2, BlankInt())
                             )
 
-    Material = nt('Material', 'ID Model Density Name')
-    MaterialLast = nt('MaterialLast', 'Limit ID Model Density Name')
-    Overburden = nt('Overburden', 'ID Model Density Name Layers')
-    OverburdenLast = nt('OverburdenLast', 'Limit ID Model Density Name Layers')
+    SoilMaterial = nt('SoilMaterial', 'ID Model Density Name Layers')
+    SoilMaterialLast = nt('SoilMaterialLast', 'Limit ID Model Density Name Layers')
+    InterfMaterial = nt('InterfMaterial', 'ID Model Density Name Layers')
+    InterfMaterialLast = nt('InterfMaterialLast', 'Limit ID Model Density Name Layers')
 
-    for NT in (Material, MaterialLast, Overburden, OverburdenLast):
+    for NT in (SoilMaterial, SoilMaterialLast, InterfMaterial, InterfMaterialLast):
         NT._prefix = 'D-1'
         NT._name = 'D1'
 
@@ -163,7 +168,7 @@ def register_objects():
     Duncan4._prefix = 'D-4.Duncan'
     Duncan4._name = 'D4Duncan'
 
-    overburden2_dict = dict(
+    overburden_dict = dict(
                             # only for Model = 4
                             # repeatable
                             Limit = ObjDef(fs.s1, ' '),
@@ -176,9 +181,9 @@ def register_objects():
                             End = ObjDef(fs.s3, '   ')
                             )
 
-    Overburden2 = nt('Overburden2', overburden2_dict.keys())
-    Overburden2._prefix = 'D-2.Over'
-    Overburden2._name = 'D2Over'
+    Overburden = nt('Overburden', overburden_dict.keys())
+    Overburden._prefix = 'D-2.Over'
+    Overburden._name = 'D2Over'
 
     hardin_dict = dict(
                         # only for Model = 5
@@ -248,18 +253,18 @@ def register_objects():
     MohrCoulomb._prefix = 'D-2.MohrCoulomb'
     MohrCoulomb._name = 'D2MohrCoulomb'
 
-    for obj, d, gen in ((Material, material_dict, D1_gen),
-                        (MaterialLast, material_dict, D1_gen),
-                        (Overburden, material_dict, D1_gen),
-                        (OverburdenLast, material_dict, D1_gen),
+    for obj, d, gen in ((SoilMaterial, material_dict, D1Soil_gen),
+                        (SoilMaterialLast, material_dict, D1Soil_gen),
+                        (InterfMaterial, material_dict, D1Interf_gen),
+                        (InterfMaterialLast, material_dict, D1Interf_gen),
                         (Isotropic, isotropic_dict, Isotropic_gen),
                         (Orthotropic, orthotropic_dict, Orthotropic_gen),
                         (Duncan2, duncan2_dict, Duncan_gen),
                         (Duncan3, duncan3_dict, Duncan_gen),
                         (Duncan4, duncan4_dict, Duncan_gen),
-                        (Overburden2, overburden2_dict, Overburden_gen),
+                        (Overburden, overburden_dict, Overburden_gen),
                         (Hardin, hardin_dict, Hardin_gen),
-                        (HardinTRIA, hardinTRIA_dict, Hardin_gen),
+                        (HardinTRIA, hardinTRIA_dict, HardinTRIA_gen),
                         (Interface, interface_dict, Interface_gen),
                         (Composite, composite_dict, Composite_gen),
                         (MohrCoulomb, mohrcoulomb_dict, MohrCoulomb_gen)
@@ -271,6 +276,10 @@ def register_objects():
 for obj in register_objects():
     exec('{} = obj'.format(obj.__name__))
 
+D_gens = (None, Isotropic_gen, Orthotropic_gen, Duncan_gen, 
+          Overburden_gen, Hardin_gen, HardinTRIA_gen, Interface_gen, 
+          Composite_gen, MohrCoulomb_gen)
+          
 del register_objects
 del register
 del obj

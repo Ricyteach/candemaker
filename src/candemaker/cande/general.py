@@ -13,16 +13,17 @@ class CIDError(Exception):
 
 
 def A1_gen(cid, struct):
-    if cid.level != 3:
-        return NotImplemented
     if len(struct) != 0:
         raise CIDError('A1 should only be applied to the first line')
     yield Master
+    if cid.level == 3:
+        from . import L3
+        yield from L3.A2_gen(cid, struct)
+    else:
+        return NotImplemented
 
 
 def E1_gen(cid, struct):
-    if cid.method == 0: #  WSD
-        raise CIDError('Section E1 only applied to LRFD method (method = 1)')
     yield Factor
 
 
