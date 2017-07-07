@@ -1,10 +1,8 @@
-from ..parmatters import prefix_spec, Pardef, s10, d5, f10, CANDE_formatter
-
-modules = 'alum basic concrete plastic steel'.split()
+modules = ['soil']
 for m in modules:
     exec('from .{} import __dict__ as d'.format(m))
     for obj in d:
-        if obj.startswith('B'):
+        if obj.startswith('D'):
             exec('from .{} import {}'.format(m, obj))
     del d
     

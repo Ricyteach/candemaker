@@ -1,4 +1,7 @@
-from . import prefix_spec, Pardef, d5, f10, CANDE_formatter
+from collections import namedtuple as nt
+
+'''
+from ..parmatters import prefix_spec, Pardef, d5, f10, CANDE_formatter
 
 class B1Basic(metaclass=CANDE_formatter):
     # ANALYS only
@@ -17,3 +20,4 @@ class B2Basic(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('B-2.Basic')
     # Small Deformation: 0, Large Deformation: 1, Plus Buckling: 2
     Mode = Pardef(d5, 0)
+'''

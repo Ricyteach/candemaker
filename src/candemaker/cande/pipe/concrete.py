@@ -1,4 +1,7 @@
-from . import prefix_spec, Pardef, s10, d5, f10, CANDE_formatter
+from collections import namedtuple as nt
+
+'''
+from ..parmatters import prefix_spec, Pardef, s10, d5, f10, CANDE_formatter
 
 class B1Concrete(metaclass=CANDE_formatter):
     _prefix = prefix_spec.format('B-1.Concrete')
@@ -101,11 +104,12 @@ class B4ConcreteCase5(metaclass=CANDE_formatter):
     Cover = Pardef(f10, 1.25) # in
     OuterInnerRatio = Pardef(f10, 0.75)
     
-class B3Concrete(metaclass=CANDE_formatter):
+class B5Concrete(metaclass=CANDE_formatter):
     # LRFD only
-    _prefix = prefix_spec.format('B-3.Concrete')
+    _prefix = prefix_spec.format('B-5.Concrete')
     Yieldϕ = Pardef(f10, 0.9)
     Crushingϕ = Pardef(f10, 0.75)
     Shearϕ = Pardef(f10, 0.9)
     Tensionϕ = Pardef(f10, 0.9)
     CrackAllow = Pardef(f10, 0.01) # in
+'''
