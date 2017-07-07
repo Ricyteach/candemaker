@@ -1,11 +1,12 @@
 from ...parse import parmatter_registry
-from ...cande.soil import Material, MaterialLast, Overburden, OverburdenLast, Isotropic, Orthotropic, Duncan2, Duncan3, Duncan4, Overburden2, Hardin, HardinTRIA, Interface, Composite, MohrCoulomb
+from ...cande import soil
 
-soil_types = Material, MaterialLast, Overburden, OverburdenLast, Isotropic, Orthotropic, Duncan2, Duncan3, Duncan4, Overburden2, Hardin, HardinTRIA, Interface, Composite, MohrCoulomb
+
+soil_types = (NT for NT in vars(soil) if isinstance(NT, type) and not NT.__name__.startswith('_'))
 
 for soil_type in soil_types:
     exec('{} = parmatter_registry[soil_type]'.format(soil_type._name))
 
-del soil_type
+del soil
 del soil_types
 del parmatter_registry

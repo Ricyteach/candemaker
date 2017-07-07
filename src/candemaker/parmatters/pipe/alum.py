@@ -1,11 +1,12 @@
 from ...parse import parmatter_registry
-from ...cande.pipe.alum import Alum1, Alum2A, Alum2DLRFD, Alum2DWSD, Alum3ADLRFD
+from ...cande.pipe import alum
 
-alum_types = Alum1, Alum2A, Alum2DLRFD, Alum2DWSD, Alum3ADLRFD
+
+alum_types = (NT for NT in vars(alum) if isinstance(NT, type) and not NT.__name__.startswith('_'))
 
 for alum_type in alum_types:
     exec('{} = parmatter_registry[alum_type]'.format(alum_type._name))
 
-del alum_type
+del alum
 del alum_types
 del parmatter_registry

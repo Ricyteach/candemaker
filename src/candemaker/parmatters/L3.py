@@ -1,11 +1,12 @@
 from ..parse import parmatter_registry
-from ..cande.L3 import PipeGroup, L3Info, L3Control, Node, NodeLast, Element, TriaElement, QuadElement, SoilElement, BeamElement, InterfElement, ElementLast, Bound, ForceBound, SideBound, BotBound, CornerBound, BoundLast
+from ..cande import L3
 
-L3_types = PipeGroup, L3Info, L3Control, Node, NodeLast, Element, TriaElement, QuadElement, SoilElement, BeamElement, InterfElement, ElementLast, Bound, ForceBound, SideBound, BotBound, CornerBound, BoundLast
+
+L3_types = (NT for NT in vars(L3) if isinstance(NT, type) and not NT.__name__.startswith('_'))
 
 for L3_type in L3_types:
     exec('{} = parmatter_registry[L3_type]'.format(L3_type._name))
 
-del L3_type
+del L3
 del L3_types
 del parmatter_registry
