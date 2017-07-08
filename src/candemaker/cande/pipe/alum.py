@@ -1,15 +1,3 @@
-def Alum_gen(cid, struct, group):
-    yield Alum1
-    if cid.mode == 'ANALYS':
-        yield Alum2A
-    elif cid.mode == 'DESIGN':
-        if cid.method == 0: #  WSD
-            yield Alum2DWSD
-        if cid.method == 1: #  LRFD
-            yield Alum2DLRFD
-    if cid.method == 1: #  LRFD
-        yield Alum3ADLRFD
-
 def register_objects():
     from collections import namedtuple as nt
     from ... import format_specs as fs

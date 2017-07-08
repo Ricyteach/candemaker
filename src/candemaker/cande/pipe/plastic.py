@@ -1,49 +1,3 @@
-from .. import CIDError
-
-def Plastic_gen(cid, struct, group):
-    yield Plastic1
-
-
-def Plastic2_gen(cid, struct, group):
-    yield Plastic2
-    yield from nextgen[group.WallType](cid, struct)
-    if cid.method == 1:  # LRFD
-        yield from Plastic4_gen(cid, struct)
-
-
-def PlasticGeneral_gen(cid, struct):
-    if cid.mode != 'ANALYS':
-        raise CIDError('General plastic pipe type for ANALYS mode only')
-    yield Plastic3AGeneral
-
-
-def PlasticSmooth_gen(cid, struct):
-    if cid.mode == 'ANALYS':
-        yield Plastic3ASmooth
-    elif cid.mode == 'DESIGN':
-        if cid.method == 0:  # WSD
-            yield Plastic3DWSD
-        elif cid.method == 1:  # LRFD
-            yield Plastic3DLRFD
-
-
-def PlasticProfile_gen(cid, struct):
-    if cid.mode != 'ANALYS':
-        raise CIDError('Profile plastic pipe type for ANALYS mode only')
-    yield Plastic3AProfile
-    yield Plastic3bAProfile
-
-
-def Plastic4_gen(cid, struct):        
-        yield Plastic4
-
-
-type_dict = dict(
-                GENERAL=PlasticGeneral_gen,
-                SMOOTH=PlasticSmooth_gen,
-                PROFILE=PlasticProfile_gen
-                )
-
 def register_objects():
     from collections import namedtuple as nt
     from ... import format_specs as fs
@@ -203,4 +157,3 @@ for obj in register_objects():
 
 del register_objects
 del obj
-del CIDError

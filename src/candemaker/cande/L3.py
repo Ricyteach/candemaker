@@ -1,69 +1,3 @@
-from . import Master, Factor, CIDError
-from . import pipe
-
-
-def A2_gen(cid, struct):
-    if len(struct) < 2:
-        raise CIDError('A2 should only be applied to the '
-                       'second line or later')
-    for num, idx in enumerate(range(cid.ngroups), 1):
-        try:
-            yield PipeGroup
-            group = cid.groups[idx]
-            try:
-                typ = group.Type
-                gen = pipe.pipe_parse_dict[typ]
-                yield from gen(cid, struct, group)
-            except Exception as e:
-                raise CIDError('Parse of section B failed for '
-                               '{}'.format(group)) from e
-        except Exception as e:
-            raise CIDError('Parse failed at pipe group #'
-                           '{:d}'.format(num)) from e
-
-
-def C1_gen(cid, struct):
-    if cid.level != 3:
-        raise CIDError('L3.C1 should only be applied to '
-                       'level 3 cid files')
-    yield L3Info
-
-
-def C2_gen(cid, struct):
-    if cid.level != 3:
-        raise CIDError('L3.C2 should only be applied to '
-                       'level 3 cid files')
-    yield L3Control
-    from .soil import D1Soil_gen, D1Interf_gen
-    for n_objs, gen, name in ((cid.nnodes, C3_gen, 'node'),
-                              (cid.nelements, C4_gen, 'element'),
-                              (cid.nbounds, C5_gen, 'boundary'),
-                              (cid.nsoil_materials, D1Soil_gen, 'soil material'),
-                              (cid.ninterf_materials, D1Interf_gen, 'interf material')):
-        for cid_obj_num, cid_obj_idx in enumerate(range(n_objs), 1):
-            try:
-                yield from gen(cid, struct, cid_obj_num)
-            except Exception as e:
-                raise CIDError('Parse failed at {} #'
-                               '{:d}'.format(name, cid_obj_num)) from e
-    if cid.method == 1: #  LRFD
-        from .general import E1_gen
-        for step_num, _ in enumerate(range(cid.nsteps), 1):
-            yield from E1_gen(cid, struct)
-
-
-def C3_gen(cid, struct, node_num):
-    yield NodeLast if node_num == cid.nnodes else Node
-
-
-def C4_gen(cid, struct, element_num):
-    yield ElementLast if element_num == cid.nelements else Element
-
-
-def C5_gen(cid, struct, bound_num):
-    yield BoundLast if bound_num == cid.nbounds else Bound
-
-
 def register_objects():
     from collections import namedtuple as nt
     from .. import format_specs as fs
@@ -226,4 +160,3 @@ for obj in register_objects():
 
 del register_objects
 del obj
-del CIDError

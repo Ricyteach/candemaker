@@ -1,21 +1,3 @@
-def Steel_gen(cid, struct, group):
-    yield Steel1
-    if cid.mode == 'ANALYS':
-        yield Steel2A
-    elif cid.mode == 'DESIGN':
-        if cid.method == 0: #  WSD
-            yield Steel2DWSD
-        if cid.method == 1: #  LRFD
-            yield Steel2DLRFD
-    if group.JointSlip: #  Slotted Joints
-        yield Steel2b
-        if cid.level > 1:
-            yield Steel2c
-            if group.VaryTravel: # Model of "Half Joints"
-                yield Steel2d
-    if cid.method == 1: #  LRFD
-        yield Steel3ADLRFD
-
 def register_objects():
     from collections import namedtuple as nt
     from ... import format_specs as fs
