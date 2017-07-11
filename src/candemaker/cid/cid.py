@@ -1,10 +1,17 @@
+from . import CidEnum
+
 class CIDError(Exception):
     pass
 
 reg_dict = {}
 
+def gen_line(cid, tag):
+    '''Generate the CID enum member from the tag'''
+    yield CidEnum[tag]
+
+
 def A1(cid):
-    yield 'A1'
+    yield from gen_line(cid, 'A1')
     if cid.level == 3:
         from .L3 import A2
         for group_num in range(1, cid.ngroups + 1):
@@ -16,11 +23,11 @@ def A1(cid):
     else:
         return 'L1 and L2 not implemented'
 
-reg_dict.update(A1 = A1)
+reg_dict.update({CidEnum.A1 : A1})
 
 def E1(cid, struct):
     if cid.method == 0: #  WSD
         raise CIDError('E1 should only be applied to LRFD problems')
-    yield 'E1'
+    yield gen_line(cid, 'E1')
 
-reg_dict.update(E1 = E1)
+reg_dict.update({CidEnum.E1 : E1})

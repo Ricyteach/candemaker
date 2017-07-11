@@ -8,28 +8,9 @@ def add_specs_defaults_to_nts(obj, d):
 
 ObjDef = nt('ObjDef', 'spec default')
 
-class CIDError(Exception):
-    pass
-
-
-def A1_gen(cid, struct):
-    if len(struct) != 0:
-        raise CIDError('A1 should only be applied to the first line')
-    yield Master
-    if cid.level == 3:
-        from . import L3
-        yield from L3.A2_gen(cid, struct)
-    else:
-        return NotImplemented
-
-
-def E1_gen(cid, struct):
-    yield Factor
-
 
 def register_objects():
-    from .. import format_specs as fs
-    from ..cid import register
+    from ..cid import register, format_specs as fs
 
     # Section A1
     master_dict = dict(

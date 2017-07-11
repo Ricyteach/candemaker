@@ -1,12 +1,12 @@
-from . import CIDError
+from . import CIDError, gen_line, CidEnum
 
 reg_dict = {}
 
 def D1Soil(cid, material_num):
     if cid.ninterf_materials == 0 and material_num == cid.nsoil_materials:
-        yield 'D1SoilL'
+        yield from gen_line(cid, 'D1SoilL')
     else:
-        yield 'D1Soil'
+        yield from gen_line(cid, 'D1Soil')
     material = cid.soil_materials[material_num-1]
     if material.Model not in range(1, 9):
         raise CIDError('Invalid model number {:d} for material #{:d}'
@@ -16,14 +16,14 @@ def D1Soil(cid, material_num):
                        'found in soil material #{:d}'.format(material.ID))
     yield from D_gens[material.Model](material)
 
-reg_dict.update(D1Soil = D1Soil)
+reg_dict.update({CidEnum.D1Soil : D1Soil})
 
 
 def D1Interf(cid, material_num):
     if material_num == cid.ninterf_materials:
-        yield 'D1InterfL'
+        yield from gen_line(cid, 'D1InterfL')
     else:
-        yield 'D1Interf'
+        yield from gen_line(cid, 'D1Interf')
     material = cid.interf_materials[material_num-1]
     if material.Model == 8:
         return NotImplemented
@@ -33,7 +33,7 @@ def D1Interf(cid, material_num):
                        ''.format(material.Model, material.ID))
     yield from D2Interface(material)
 
-reg_dict.update(D1Interf = D1Interf)
+reg_dict.update({CidEnum.D1Interf : D1Interf})
 
 
 # probably don't ever need these models
@@ -43,26 +43,26 @@ D2Hardin = None
 D2HardinTRIA = None
 D2Composite = None
 
-reg_dict.update(D2Orthotropic = D2Orthotropic, D2Overburden = D2Overburden,
-                D2Hardin = D2Hardin, D2HardinTRIA = D2HardinTRIA,
-                D2Composite = D2Composite)
+reg_dict.update({CidEnum.D2Orthotropic : D2Orthotropic, CidEnum.D2Overburden : D2Overburden,
+                CidEnum.D2Hardin : D2Hardin, CidEnum.D2HardinTRIA : D2HardinTRIA,
+                CidEnum.D2Composite : D2Composite})
 
 
 def D2MohrCoulomb(material):
     if material.Model != 8:
         raise CIDError('Model #{:d} invalid for mohr/coulomb'
                        ''.format(material.Model))
-    yield 'D2MohrCoulomb'
+    yield from gen_line(cid, 'D2MohrCoulomb')
 
-reg_dict.update(D2MohrCoulomb = D2MohrCoulomb)
+reg_dict.update({CidEnum.D2MohrCoulomb : D2MohrCoulomb})
 
 def D2Isotropic(material):
     if material.Model != 1:
         raise CIDError('Model #{:d} invalid for isotropic'
                        ''.format(material.Model))
-    yield 'D2Isotropic'
+    yield from gen_line(cid, 'D2Isotropic')
 
-reg_dict.update(D2Isotropic = D2Isotropic)
+reg_dict.update({CidEnum.D2Isotropic : D2Isotropic})
 
 
 def D2Duncan(material):
@@ -75,24 +75,24 @@ def D2Duncan(material):
                     'ML95 ML90 ML85 ML80 ML50'
                     'CL95 CL90 CL85 CL80').split()
 
-    yield 'D2Duncan'
+    yield from gen_line(cid, 'D2Duncan')
     if material.Name == 'USER':
-        yield 'D3Duncan'
-        yield 'D4Duncan'
+        yield from gen_line(cid, 'D3Duncan')
+        yield from gen_line(cid, 'D4Duncan')
     elif material.Name not in duncan_models + selig_models:
         raise CIDError('Invalid Duncan material name for '
                        '#{}'.format(material.ID))
 
-reg_dict.update(D2Duncan = D2Duncan)
+reg_dict.update({CidEnum.D2Duncan : D2Duncan})
 
 
 def D2Interface(material):
     if material.Model != 6:
         raise CIDError('Model #{:d} invalid for interface material'
                        ''.format(material.Model))
-    yield 'D2Interface'
+    yield from gen_line(cid, 'D2Interface')
 
-reg_dict.update(D2Interface = D2Interface)
+reg_dict.update({CidEnum.D2Interface : D2Interface})
 
 
 D_gens = (None, D2Isotropic, D2Orthotropic, D2Duncan, 

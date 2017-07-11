@@ -1,6 +1,7 @@
+from collections import namedtuple as nt
 from parmatter import FormatGroupMeta, VersatileParmatter
-from mytools.utilities import update_special
-from .format_specs import prefix_spec
+from mytools import update_special
+from .cid import format_specs as fs
 
 class FileParseError(Exception):
     pass
@@ -14,7 +15,7 @@ class CANDE_formatter(FormatGroupMeta):
 
 def CANDE_formatter_factory(cande_obj, obj_dict):
     namespace = obj_dict.copy()
-    update_special(namespace, _prefix=prefix_spec.format(cande_obj._prefix))
+    update_special(namespace, _prefix=fs.prefix_spec.format(cande_obj._prefix))
     return CANDE_formatter(cande_obj._name, (), namespace)
 
 # cid file generator mapping
