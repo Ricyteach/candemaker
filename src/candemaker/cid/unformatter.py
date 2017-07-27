@@ -1,43 +1,60 @@
-from collections import namedtuple as nt
+# from collections import namedtuple as nt
+# from . import format_specs as fs
 from parmatter import FormatGroupMeta, VersatileParmatter
 from mytools import update_special
-from . import format_specs as fs
+from .. import reg
+from .linedef import linedef_reg
+from .prefix import prefix_reg
 
+
+'''
 class FileParseError(Exception):
     pass
 
 class RegistrationError(Exception):
     pass
+'''
 
-class CandeUnformatter(FormatGroupMeta):
+
+class CandeFieldGroup(FormatGroupMeta):
     _formatter_type = VersatileParmatter
     _sep = ''
 
-def CANDE_formatter_factory(cande_obj, obj_dict):
-    namespace = obj_dict.copy()
-    update_special(namespace, _prefix=fs.prefix_spec.format(cande_obj._prefix))
-    return CANDE_formatter(cande_obj._name, (), namespace)
+
+def CandeFieldGroup_factory(name, linedef):
+    namespace = {f.name: (f.spec, f.default) for f in linedef}
+    update_special(namespace, _prefix=prefix_reg[name])
+    return CandeFieldGroup(name, (), namespace)
+
 
 # cid file generator mapping
-gen_registry = {}
+unformatter_reg = reg.CidRegistry()
 
+for name, linedef in linedef_reg.items():
+    unformatter_reg[name] = CandeFieldGroup_factory(name, linedef)
+
+
+'''
 def register_cid_generator(cande_obj, cid_generator):
-    '''Add cande objects to the cid generator registry'''
+    '''#Add cande objects to the cid generator registry
+'''
     try:
         gen_registry[cande_obj] = cid_generator
     except AttributeError as e:
         raise RegistrationError('Failed to register {} with generator registry'.format(type(cande_obj).__name__)) from e
 
 # cid file formatter mapping
-parmatter_registry = {}
+parmatter_reg = {}
 
 def register_cid_parmatter(cande_obj, obj_dict):
-    '''Add cande objects to the cande parser registry'''
+    '''#Add cande objects to the cande parser registry
+'''
     try:
-        parmatter = CANDE_formatter_factory(cande_obj, obj_dict)
+        parmatter = CANDE_unformatter_factory(cande_obj, obj_dict)
         parmatter_registry[cande_obj] = parmatter
     except AttributeError as e:
         raise RegistrationError('Failed to register {} with parmatter registry'.format(type(cande_obj).__name__)) from e
+
 
 UnformatLine = nt('UnformatFile', 'type obj')
 
@@ -68,3 +85,4 @@ def parse_cid(cid, struct):
     for obj_type in parse_file(cid, struct, generators, labels):
         line_type = parmatter_registry[obj_type]
         yield UnformatLine(line_type, obj_type)
+'''

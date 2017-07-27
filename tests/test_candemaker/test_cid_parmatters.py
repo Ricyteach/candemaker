@@ -1,5 +1,5 @@
-from candemaker.cid_parmatters import A1, D1    
-import pytest
+from candemaker.cid_parmatters import A1, D1
+
 
 def test_A1():
     assert A1.format() == '                      A-1!!ANALYS   3 1  1                                                              -99    0    0    0'

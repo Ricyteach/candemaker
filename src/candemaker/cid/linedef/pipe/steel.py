@@ -1,7 +1,8 @@
-from .. import format_specs as fs, cid_line
+from ... import format_specs as fs
+from ..any import line
 
 
-B1Steel = cid_line(
+B1Steel = line(
                         Modulus = (fs.f10, 29E6), # psi
                         Poissons = (fs.f10, 0.3),
                         Yield = (fs.f10, 33E3), # psi
@@ -19,7 +20,7 @@ B1Steel = cid_line(
                         Mode = (fs.d5, 0)
                         )
 
-B2SteelA = cid_line(
+B2SteelA = line(
                     # for ANALYS only
                     Area = (fs.f10, 0), # in2/in
                     I = (fs.f10, 0), # in4/in
@@ -28,7 +29,7 @@ B2SteelA = cid_line(
                     )
 
 
-B2SteelDWSD = cid_line(
+B2SteelDWSD = line(
                         # for DESIGN only
                         # Non LRFD only
                         YieldFS = (fs.f10, 2),
@@ -39,7 +40,7 @@ B2SteelDWSD = cid_line(
                         )
 
 
-B2SteelDLRFD = cid_line(
+B2SteelDLRFD = line(
                         # for DESIGN only
                         # LRFD only
                         Yield = (fs.f10, 1),
@@ -50,7 +51,7 @@ B2SteelDLRFD = cid_line(
                         )
 
 
-B2bSteel = cid_line(
+B2bSteel = line(
                     # use if JointSlip>0
                     Slip = (fs.f10, 4950), # psi
                     Yield = (fs.f10, 33E3), # psi
@@ -64,7 +65,7 @@ B2bSteel = cid_line(
                     )
 
 
-B2cSteel = cid_line(
+B2cSteel = line(
                     # Level 2 or 3 only
                     # use if JointSlip>0
                     # up to 15 fields of d4 integers
@@ -72,7 +73,7 @@ B2cSteel = cid_line(
                     )
 
 
-B2dSteel = cid_line(
+B2dSteel = line(
                     # Level 2 or 3 only
                     # use if JointSlip>0
                     # up to 15 fields of f4 floats
@@ -81,12 +82,12 @@ B2dSteel = cid_line(
     
 
 
-B3SteelADLRFD = cid_line(
+B3SteelADLRFD = line(
                         # LRFD only
                         Yieldϕ = (fs.f10, 1),
                         Bucklingϕ = (fs.f10, 1),
                         Seamϕ = (fs.f10, 1),
                         Plasticϕ = (fs.f10, 0.9),
-                        Deflection = (fs.f10, 5), # percent
+                        DeflectionPercent = (fs.f10, 5), # percent
                         Combined = (fs.f10, 0.9) # deep corrug only
                         )

@@ -1,7 +1,8 @@
-from .. import format_specs as fs, cid_line
+from ... import format_specs as fs
+from ..any import line
 
 
-B1Alum = cid_line(
+B1Alum = line(
                     Modulus = (fs.f10, 10E6), # psi
                     Poissons = (fs.f10, 0.33),
                     Yield = (fs.f10, 24E3), # psi
@@ -14,7 +15,7 @@ B1Alum = cid_line(
                     )
 
 
-B2AlumA = cid_line(
+B2AlumA = line(
                     # for ANALYS mode only
                     Area = (fs.f10, 0), # in2/in
                     I = (fs.f10, 0), # in4/in
@@ -22,7 +23,7 @@ B2AlumA = cid_line(
                     )
 
 
-B2AlumDWSD = cid_line(
+B2AlumDWSD = line(
                         # for DESIGN mode only and no LRFD only
                         YieldFS = (fs.f10, 3),
                         BucklingFS = (fs.f10, 2),
@@ -32,7 +33,7 @@ B2AlumDWSD = cid_line(
                         )
 
 
-B2AlumDLRFD = cid_line(
+B2AlumDLRFD = line(
                         # for DESIGN mode and LRFD mode only
                         Yield = (fs.f10, 1),
                         Buckling = (fs.f10, 1),
@@ -42,11 +43,11 @@ B2AlumDLRFD = cid_line(
                         )
 
 
-B3AlumADLRFD = cid_line(
+B3AlumADLRFD = line(
                         # LRFD only
                         Yieldϕ = (fs.f10, 1),
                         Bucklingϕ = (fs.f10, 1),
                         Seamϕ = (fs.f10, 0.67),
                         Plasticϕ = (fs.f10, 0.85),
-                        Deflection = (fs.f10, 5) # percent
+                        DeflectionPercent = (fs.f10, 5) # percent
                         )

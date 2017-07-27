@@ -1,4 +1,5 @@
-from .. import format_specs as fs, cid_line
+from ... import format_specs as fs
+from ..any import line
 
 '''
 from ..parmatters import prefix_spec, Pardef, s10, d5, f10, CANDE_formatter

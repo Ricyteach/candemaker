@@ -1,7 +1,8 @@
-from .. import format_specs as fs, cid_line
+from ... import format_specs as fs
+from ..any import line
 
 
-B1Plastic = cid_line(
+B1Plastic = line(
                     # GENERAL, SMOOTH, PROFILE
                     WallType = (fs.s10, 'GENERAL'),
                     # HDPE, PVC, PP, OTHER
@@ -13,7 +14,7 @@ B1Plastic = cid_line(
                     )
 
 
-B2Plastic = cid_line(
+B2Plastic = line(
                     ShortModulus = (fs.f10, 0), # psi
                     ShortStrength = (fs.f10, 0), # psi
                     LongModulus = (fs.f10, 0), # psi
@@ -23,13 +24,13 @@ B2Plastic = cid_line(
                     )
 
 
-B3PlasticAGeneral = cid_line(
+B3PlasticAGeneral = line(
                             # for ANALYS only
                             # WallType = GENERAL
                             Height = (fs.f10, 0) # in
                             )
 
-B3PlasticASmooth = cid_line(
+B3PlasticASmooth = line(
                             # for ANALYS only
                             # WallType = SMOOTH
                             Height = (fs.f10, 0), # in
@@ -38,7 +39,7 @@ B3PlasticASmooth = cid_line(
                             Centroid = (fs.f10, 0) # in
                             )
 
-B3PlasticAProfile = cid_line(
+B3PlasticAProfile = line(
                             # for ANALYS only
                             # WallType = PROFILE
                             # repeatable (multiple properties in one pipe group)
@@ -55,7 +56,7 @@ B3PlasticAProfile = cid_line(
                             Last = (fs.d5, 1)
                             )
 
-B3bPlasticAProfile = cid_line(
+B3bPlasticAProfile = line(
                                 # for ANALYS only
                                 # WallType = PROFILE
                                 # Required for each NumHorizontal elements
@@ -66,7 +67,7 @@ B3bPlasticAProfile = cid_line(
                                 SupportK = (fs.f10, 4)
                                 )
 
-B3PlasticDWSD = cid_line(
+B3PlasticDWSD = line(
                         # for DESIGN only
                         # WallType = SMOOTH
                         # Non LRFD only
@@ -74,10 +75,10 @@ B3PlasticDWSD = cid_line(
                         BucklingFS = (fs.f10, 3),
                         StrainFS = (fs.f10, 2),
                         Deflection = (fs.f10, 5), # percent
-                        Tension = (fs.f10, 0.05) # in/in
+                        Tensile = (fs.f10, 0.05) # in/in
                         )
 
-B3PlasticDLRFD = cid_line(
+B3PlasticDLRFD = line(
                          # for DESIGN only
                          # WallType = SMOOTH
                          # LRFD only
@@ -85,16 +86,16 @@ B3PlasticDLRFD = cid_line(
                          Buckling = (fs.f10, 1),
                          Strain = (fs.f10, 1),
                          Deflection = (fs.f10, 1),
-                         Tension = (fs.f10, 1)
+                         Tensile = (fs.f10, 1)
                          )
 
-B4Plastic = cid_line(
+B4Plastic = line(
                     # for DESIGN only
                     # WallType = SMOOTH
                     # LRFD only
                     Yieldϕ = (fs.f10, 1),
                     Bucklingϕ = (fs.f10, 1),
                     Strainϕ = (fs.f10, 1),
-                    Deflection = (fs.f10, 5), # percent
-                    Tension = (fs.f10, 0.05) # in/in
+                    DeflectionPercent = (fs.f10, 5), # percent
+                    TensileService = (fs.f10, 0.05) # in/in
                     )

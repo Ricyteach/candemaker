@@ -1,9 +1,11 @@
 from mytools.blank import BlankInt
-from . import format_specs as fs, cid_line
+from .. import format_specs as fs
+from .any import line
 
 
-D1 = cid_line(
-                Limit = (fs.s1, ' '),
+D1 = line(
+                # Note: moved limit field to line _prefix
+                # Limit = (fs.s1, ' '),
                 ID = (fs.d4, 0),
                 # 1: isotropic, 2: orthotropic, 
                 # 3: Duncan/Selig, 4: Overburden,
@@ -16,13 +18,13 @@ D1 = cid_line(
                 Layers = (fs.d2, BlankInt())
                 )
 
-D2Isotropic = cid_line(
+D2Isotropic = line(
                         # only for Model = 1
                         Modulus = (fs.f10, 0), # psi
                         Poissons = (fs.f10, 0)
                         )
 
-D2Orthotropic = cid_line(
+D2Orthotropic = line(
                         # only for Model = 2
                         ModulusX = (fs.f10, 0), # psi
                         ModulusZ = (fs.f10, 0), # psi
@@ -31,7 +33,7 @@ D2Orthotropic = cid_line(
                         Angle = (fs.f10, 0) # degrees
                         )
 
-D2Duncan = cid_line(
+D2Duncan = line(
                     # only for Model = 3
                     LRFDControl = (fs.d5, 0),
                     # 1.0 for in-situ materials
@@ -42,7 +44,7 @@ D2Duncan = cid_line(
                     Unloading = (fs.d5, 1)
                     )
 
-D3Duncan = cid_line(
+D3Duncan = line(
                     # only for Model = 3
                     Cohesion = (fs.f10, 0), # psi
                     Phi_i = (fs.f10, 0), # degrees
@@ -52,14 +54,14 @@ D3Duncan = cid_line(
                     Ratio = (fs.f10, 0)
                     )
                     
-D4Duncan = cid_line(
+D4Duncan = line(
                     # only for Model = 3
                     Bulk_i = (fs.f10, 0),
                     Bulk_m = (fs.f10, 0),
                     Poissons = (fs.f10, 0)
                     )
 
-D2Over = cid_line(
+D2Over = line(
                     # only for Model = 4
                     # repeatable
                     Limit = (fs.s1, ' '),
@@ -72,7 +74,7 @@ D2Over = cid_line(
                     End = (fs.s3, '   ')
                     )
 
-D2Hardin = cid_line(
+D2Hardin = line(
                     # only for Model = 5
                     PoissonsLow = (fs.f10, 0.01),
                     PoissonsHigh = (fs.f10, 0.49),
@@ -86,7 +88,7 @@ D2Hardin = cid_line(
                     Nonlinear = (fs.d5, 0) # ignored
                     )
 
-D2HardinTRIA = cid_line(
+D2HardinTRIA = line(
                         # only for Model = 5
                         PoissonsLow = (fs.f10, 0.01),
                         PoissonsHigh = (fs.f10, 0.49),
@@ -97,7 +99,7 @@ D2HardinTRIA = cid_line(
                         Nonlinear = (fs.d5, 0) # ignored
                         )
 
-D2Interface = cid_line(
+D2Interface = line(
                         # only for Model = 6
                         Angle = (fs.f10, 0), # degrees
                         Friction = (fs.f10, 0),
@@ -105,14 +107,14 @@ D2Interface = cid_line(
                         Gap = (fs.f10, 0) # in
                         )
 
-D2Composite = cid_line(
+D2Composite = line(
                         # only for Model = 7
                         Group1 = (fs.d5, 0),
                         Group2 = (fs.d5, 0),
                         Fraction = (fs.f10, 0)
                         )
 
-D2MohrCoulomb = cid_line(
+D2MohrCoulomb = line(
                         # only for Model = 8
                         Modulus = (fs.f10, 0), # psi
                         Poissons = (fs.f10, 0),
