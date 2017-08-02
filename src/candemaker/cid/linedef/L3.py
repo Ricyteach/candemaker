@@ -1,4 +1,4 @@
-from mytools.blank import BlankInt, BlankFloat
+from parmatter.blank import BlankInt, BlankFloat
 from .. import format_specs as fs
 from .any import line
 

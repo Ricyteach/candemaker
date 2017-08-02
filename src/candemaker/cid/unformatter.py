@@ -1,6 +1,6 @@
 # from collections import namedtuple as nt
 # from . import format_specs as fs
-from parmatter import FormatGroupMeta, VersatileParmatter
+from parmatter import FormatGroupMeta, VersatileParmatter, FloatIntParmatter
 from mytools import update_special
 from .. import reg
 from .linedef import linedef_reg
@@ -16,8 +16,12 @@ class RegistrationError(Exception):
 '''
 
 
+class CandeParmatter(VersatileParmatter, FloatIntParmatter):
+    pass
+
+
 class CandeFieldGroup(FormatGroupMeta):
-    _formatter_type = VersatileParmatter
+    _formatter_type = CandeParmatter
     _sep = ''
 
 

@@ -1,8 +1,16 @@
-from candemaker.cande import CandeObj
-from .objs import Master, Control, Info
+import pytest
+from pathlib import Path
+from candemaker import *
 
+@pytest.fixture
+def cid_lines():
+    return Path('test_input.cid').read_text().split('\n')
 
+@pytest.mark.current
+@pytest.mark.cande
+def test_from_cid(cid_lines):
+    CandeObj.from_cid(cid_lines)
+
+@pytest.mark.cande
 def test_CandeObj_empty():
     obj = CandeObj.empty()
-    d = {'Master': None, 'Control': None, 'Info': None, '_groups': [], '_nodes': [], '_elements': [], '_boundaries': [], '_materials': [], '_factors': []}
-    assert vars(obj) == d

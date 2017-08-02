@@ -1,3 +1,5 @@
+######### NOTE: HAS NOT BEEN UPDATED!! ##################
+
 CANDE Object Creation
 =====================
 

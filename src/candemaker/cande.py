@@ -118,9 +118,15 @@ class CandeObj():
                              '{!r}'.format(start)) from None
         gen_names = obj.cidgen(startmember)(obj)
         with obj.cid_controller as gen_build:
+            logging.debug('***CANDE_OBJ BUILD BEGUN***')
             for line, member_name in zip(lines, gen_names):
+                logging.debug('***BEGINNING OF SECTION {} HANDLING***'
+                              ''.format(member_name))
                 cid_obj = obj.unformat(line, member_name)
                 gen_build.send(member_name, cid_obj)
+                logging.debug('***ENDING OF SECTION {} HANDLING***'
+                              ''.format(member_name))
+            logging.debug('***CANDE_OBJ BUILD COMPLETE***')
         return obj
     @staticmethod
     def cidgen(cidmember):

@@ -1,5 +1,6 @@
+import pdb
 import logging
-from .controllers import controller, top_level_merge, flatten_merge, flat_list_merge, list_merge, list_merge_last, ListComplete, ControlError
+from .controllers import merge_lower, controller, top_level_merge, flatten_merge, flat_list_merge, list_merge, list_merge_last, ListComplete, ControlError, MergeError, CommandError
 from .. import reg
 
 logging = logging.getLogger(__name__)
@@ -46,21 +47,56 @@ class DispatchController():
         self.controller.send(None)
         logging.debug('DispatchController initialized with None')
         logging.debug('DispatchController reset complete')
-    def send(self, member_name, cande_obj):
+    def check_active(self):
         if self.cande is None:
             raise ControlError('Use the DispatchController only in a context manager.')
+    def send(self, member_name, cande_obj):
         logging.debug('DispatchController.send:\n\tmember_name: {}\n\t'
                       'cande_obj type: {}\n\tcande_obj: {}'
                       ''.format(member_name, type(cande_obj).__name__, cande_obj))
         if member_name in 'A2 C1 D1 STOP'.split():
             self.reset()
         try:
-            to_send = member_name, self.cande.candeattr_reg[member_name]
-            self.controller.send(to_send)
-        except KeyError:
+            self.send_control_command(member_name, cande_obj)
+        except CommandError:
             pass
-        to_send = cande_obj
+        self.send_cande_obj(cande_obj)
+    def send_control_command(self, member_name, cande_obj):
+        self.check_active()
         try:
-            self.controller.send(to_send)
+            to_send = member_name, self.cande.candeattr_reg[member_name]
+        except KeyError as err:
+            raise CommandError(member_name, cande_obj) from err
+        self.controller.send(to_send)
+    def send_cande_obj(self, cande_obj):
+        self.check_active()
+        try:
+            logging.debug('Initial attempt to send cande_obj received from {}: {} '
+                          'type cande_obj'.format(type(self.cande).__name__, 
+                                                  type(cande_obj).__name__))
+            self.controller.send(cande_obj)
+            logging.debug('Initial attempt to send cande_obj succeeded.')
         except ListComplete:
+            logging.debug('Initial attempt to send cande_obj succeeded. '
+                          'Received signal to reset the list.')
             self.reset()
+        except MergeError as merge_err:
+            # The intial attempt may fail because the namedtuple object is trying
+            # to be merged into a top_level object that is itself simply some
+            # namedtuple; the two namedtuples need to be merged into a new top_level
+            logging.debug('Initial attempt to send cande_obj failed. '
+                          'Getting new object...')
+            second, first, member_name = merge_err.args[1:]
+            logging.debug('Constructing new object from {} and {}'
+                          ''.format(*(type(o).__name__ for o in (first, second))))
+            self.reset()
+            new_obj = type(type(first).__name__+'Object', (), {})()
+            logging.debug('Merging first into new object: {}'.format(type(new_obj).__name__))
+            merge_lower(first, new_obj)
+            self.send_control_command(member_name, new_obj)
+            logging.debug('Sending second object: {}'.format(type(second).__name__))
+            self.send_cande_obj(second)
+            logging.debug('Handling of MergeError complete.')
+        except Exception:
+            logging.debug('Initial attempt to send cande_obj failed. Need new object?')
+            raise

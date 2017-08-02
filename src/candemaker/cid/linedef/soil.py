@@ -1,4 +1,4 @@
-from mytools.blank import BlankInt
+from parmatter.blank import BlankInt
 from .. import format_specs as fs
 from .any import line
 
