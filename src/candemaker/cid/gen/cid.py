@@ -5,14 +5,29 @@ __all__ = 'A1 E1'.split()
 class CIDError(Exception):
     pass
 
-def gen_line(tag):
-    '''Validate the CID tag'''
-    yield CidEnum[tag].name
+class Complete(CIDError):
+    pass
 
+class SectionComplete(Complete):
+    pass
+
+class ObjectComplete(Complete):
+    pass
+
+'''
+def gen_line(receiver, tag):
+    while True:
+        try:
+            # Validate the CID tag
+            receiver.send(CidEnum[tag].name)
+            yield
+        except Complete as err:
+            receiver.throw(err)
+'''
 
 def A1(cid):
     from .L3 import A2
-    yield from gen_line('A1')
+    cid.listener.send('A1')
     if cid.level == 3:
         for group_num in range(1, cid.ngroups + 1):
             try:
@@ -27,4 +42,5 @@ def A1(cid):
 def E1(cid):
     if cid.method == 0: #  WSD
         raise CIDError('E1 should only be applied to LRFD problems')
-    yield from gen_line('E1')
+    cid.listener.send('E1')
+    cid.listener.throw(SectionComplete)
