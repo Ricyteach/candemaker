@@ -4,7 +4,8 @@ from candemaker import *
 
 @pytest.fixture
 def cid_lines():
-    return Path('test_input.cid').read_text().split('\n')
+    import pdb;pdb.set_trace()
+    return Path(r'tests\test_candemaker\test_input.cid').read_text().split('\n')
 
 @pytest.mark.current
 @pytest.mark.cande

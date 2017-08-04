@@ -17,3 +17,8 @@ d5 = '{: >5d}'
 f4 = '{: >4.1fd}'
 f9 = '{: >9.1fd}'
 f10 = '{: >10.1fd}'
+
+def blank(spec):
+    '''Add  "blank" to the format spec.'''
+    spec = spec[:-1] + 'blank' + spec[-1:]
+    return spec

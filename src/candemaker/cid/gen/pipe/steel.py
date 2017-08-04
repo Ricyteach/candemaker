@@ -10,6 +10,7 @@ def B1Steel(cid, group):
             yield from gen_line('B2SteelDWSD')
         if cid.method == 1: #  LRFD
             yield from gen_line('B2SteelDLRFD')
+    import pdb;pdb.set_trace()
     if group.JointSlip: #  Slotted Joints
         yield from gen_line('B2bSteel')
         if cid.level > 1:

@@ -20,6 +20,9 @@ cidbuild_reg = reg.CidRegistry(
                             )
 
 
+
+
+
 class DispatchController():
     def __init__(self, dispatch, default=top_level_merge):
         self.dispatch = dispatch
@@ -54,6 +57,7 @@ class DispatchController():
         logging.debug('DispatchController.send:\n\tmember_name: {}\n\t'
                       'cande_obj type: {}\n\tcande_obj: {}'
                       ''.format(member_name, type(cande_obj).__name__, cande_obj))
+        # each of these can mean the end of a previous sub-section
         if member_name in 'A2 C1 D1 STOP'.split():
             self.reset()
         try:

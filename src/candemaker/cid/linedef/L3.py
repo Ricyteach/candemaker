@@ -1,4 +1,3 @@
-from parmatter.blank import BlankInt, BlankFloat
 from .. import format_specs as fs
 from .any import line
 
@@ -40,12 +39,12 @@ C3 = line(
                 Num = (fs.d4, 0),
                 SpecialReferenceCode = (fs.d3, 0),
                 SpecialGenerationCode = (fs.d1, 0),
-                BasicGenerationCode = (fs.d1, BlankInt()),
+                BasicGenerationCode = (fs.blank(fs.d1), 0),
                 X = (fs.f10, 0),
                 Y = (fs.f10, 0),
-                Increment = (fs.d5, BlankInt()),
-                Spacing = (fs.f10, BlankFloat()),
-                Radius = (fs.f10, BlankFloat())
+                Increment = (fs.blank(fs.d5), 0),
+                Spacing = (fs.blank(fs.f10), 0),
+                Radius = (fs.blank(fs.f10), 0)
                 )
 
 C4 = line(
@@ -60,11 +59,11 @@ C4 = line(
                 Step = (fs.d5, 0),
                 # 0 for normal, 1 for interface,
                 # 8 for link element fixed, 9 for link element pinned
-                InterfLink = (fs.d5, BlankInt()),
-                IncrementAdded = (fs.d5, BlankInt()),
-                RowsAdded = (fs.d5, BlankInt()),
-                IncrementBetween = (fs.d5, BlankInt()),
-                Death = (fs.d5, BlankInt())
+                InterfLink = (fs.blank(fs.d5), 0),
+                IncrementAdded = (fs.blank(fs.d5), 0),
+                RowsAdded = (fs.blank(fs.d5), 0),
+                IncrementBetween = (fs.blank(fs.d5), 0),
+                Death = (fs.blank(fs.d5), 0)
                 )
 
 C5 = line(
@@ -77,8 +76,8 @@ C5 = line(
                 Yvalue = (fs.f10, 0),
                 Angle = (fs.f10, 0),
                 Step = (fs.d5, 0),
-                EndNode = (fs.d5, BlankInt()),
-                Increment = (fs.d5, BlankInt()),
-                Pressure1 = (fs.f10, BlankFloat()),
-                Pressure2 = (fs.f10, BlankFloat())
+                EndNode = (fs.blank(fs.d5), 0),
+                Increment = (fs.blank(fs.d5), 0),
+                Pressure1 = (fs.blank(fs.f10), 0),
+                Pressure2 = (fs.blank(fs.f10), 0)
                 )

@@ -9,43 +9,69 @@ class ControlError(Exception):
 class CommandError(Exception):
     pass
 
-class ListComplete(Exception):
+class Complete(Exception):
     pass
 
 class MergeError(Exception):
     pass
 
-def merge_lower(from_obj, to_obj):
-    '''Copies all members from one object to another
-    in lowercase form.'''
+def merge_objs(from_obj, to_obj, members):
+    '''Copies specified members from one object to another.'''
     logging.debug('Merging from\n{}: {}\n<---------to--------->\n{}: {}.'
                   ''.format(type(from_obj).__name__, from_obj,
                             type(to_obj).__name__, to_obj))
-    fields = ((f, f.lower()) for f in from_obj._fields)
     try:
-        copymembers(from_obj, to_obj, fields, suppress_err=False)
+        copymembers(from_obj, to_obj, members, suppress_err=False)
     except AttributeError as e:
         raise MergeError('Failed to merge from_obj into to_obj.',
                           from_obj, to_obj) from e
 
 
-def top_level_merge(top_obj):
-    '''Pulls sent objects into top object model.'''
+def merge_default(from_obj, to_obj):
+    '''Copies all members from one object to another.'''
+    fields = vars(from_obj)
+    merge_objs(from_obj, to_obj, fields)
+
+def merge_namedtuple(from_nt, to_obj):
+    '''Copies all namedtuple fields from one object to another.'''
+    fields = from_obj._fields
+    merge_objs(from_obj, to_obj, fields)
+
+def merge_namedtuple_lower(from_obj, to_obj):
+    '''Copies all namedtuple fields from one object to another
+    in lowercase form.
+    '''
+    fields = ((f, f.lower()) for f in from_obj._fields)
+    merge_objs(from_obj, to_obj, fields)
+
+
+def top_level_merge(top_obj, merger=merge_default):
+    '''Pulls sent object into top object model using
+    the specified merger.
+    '''
     try:
         logging.debug('top_level_merge started')
         obj = yield
         logging.debug('top_level_merge received {}'
                       ''.format(obj))
-        merge_lower(obj, top_obj)
+        merger(obj, top_obj)
         logging.debug('top_level_merge finished')
     except GeneratorExit:
         logging.debug('top_level_merge exited')
         raise
 
 
+def top_level_merge_last(top_obj, merger=merge_default):
+    '''Pulls sent object into top object model using the
+    specified merger and raises an exception to signal
+    the object is complete.
+    '''
+    yield from top_level_merge(top_obj, merger)
+    raise Complete()
+
 
 def list_merge(xlist):
-    '''Appends sent objects to the list.'''
+    '''Appends sent object to the list.'''
     try:
         logging.debug('list_merge started')
         obj = yield
@@ -60,30 +86,26 @@ def list_merge(xlist):
 
 def list_merge_last(xlist):
     '''Appends sent object to the list and raises
-    an exception to signal the list is complete.'''
-    try:
-        logging.debug('list_merge_last started')
-        obj = yield
-        logging.debug('appending {}: {}'
-                      ''.format(type(obj).__name__, obj))
-        xlist.append(obj)
-        logging.debug('list_merge_last finished')
-        raise ListComplete()
-    except GeneratorExit:
-        logging.debug('list_merge_last exited')
-        raise
+    an exception to signal the list is complete.
+    '''
+    yield from list_merge(xlist)
+    raise Complete()
 
 
-def flatten_merge(top_obj):
+def flatten_merge(top_obj, merger=merge_default):
     '''Pulls multiple objects into object model.'''
     logging.debug('flatten_merge started')
     try:
         while True:
-            yield from top_level_merge(top_obj)
+            yield from top_level_merge(top_obj, merger)
             logging.debug('continuing flatten_merge')
     except GeneratorExit:
         logging.debug('flatten_merge exited')
         raise
+    except Complete:
+        obj = yield
+        merger(obj, top_obj)
+        yield # prevent immediate StopIteration
 
 
 def mult_list_merge(xlist):
@@ -96,21 +118,31 @@ def mult_list_merge(xlist):
     except GeneratorExit:
         logging.debug('mult_list_merge exited')
         raise
+    except Complete:
+        obj = yield
+        xlist.append(obj)
+        yield # prevent immediate StopIteration
 
 
-def flat_list_merge(xlist):
+def flat_list_merge(xlist, merger=merge_default):
     '''Flattens multiple sent objects and appends
     flattened object to the list.'''
-    logging.debug('flat_list_merge started')
     try:
-        obj = yield
-        logging.debug('appending {}: {}'
-                      ''.format(type(obj).__name__, obj))
-        xlist.append(obj)
-        yield from flatten_merge(obj)
+        logging.debug('flat_list_merge started')
+        mlist_merge = mult_list_merge(xlist)
+        while True:
+            try:
+                obj = yield
+                mlist_merge.send(obj)
+            except Complete:
+                mlist_merge.close()
+                break
+            else:
+                obj_merge = flatten_merge(obj, merger)
+                yield from obj_merge
         logging.debug('flat_list_merge finished')
     except GeneratorExit:
-        logging.debug('mult_list_merge exited')
+        logging.debug('flat_list_merge exited')
         raise
 
 

@@ -1,4 +1,3 @@
-from parmatter.blank import BlankInt
 from .. import format_specs as fs
 from .any import line
 
@@ -15,7 +14,7 @@ D1 = line(
                 Density = (fs.f10, 0),
                 Name = (fs.s20, ''),
                 # overburden model only
-                Layers = (fs.d2, BlankInt())
+                Layers = (fs.blank(fs.d2), 0)
                 )
 
 D2Isotropic = line(

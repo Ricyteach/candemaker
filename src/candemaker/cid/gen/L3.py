@@ -30,9 +30,10 @@ def C2(cid):
             try:
                 yield from gen(cid, cid_obj_num)
             except Exception as e:
-                raise CIDError('cid L3.C2 failed at {} #'
-                               '{:d}'.format(name, cid_obj_num)) from e
-    
+                raise CIDError('cid L3.{} failed at {} #'
+                               '{:d}'.format(gen.__name__, name,
+                                             cid_obj_num)) from e
+
 
 
 def C3(cid, node_num):

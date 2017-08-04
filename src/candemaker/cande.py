@@ -69,11 +69,28 @@ class ObjListDesc():
         setattr(obj, self.private_var, value)
 
 
+class GeneratorManager():
+    '''A context manager that produces a generator.
+    
+    Example usage:
+    
+        with GeneratorManager(some_gen, arg) as g:
+            yield from g
+    '''
+    def __init__(self, start, *args, **kwargs):
+        self._generator = start(*args, **kwargs)
+    def __enter__(self):
+        return self._generator
+    def __exit__(self, owner, value, tb):
+        self._generator.close()
+        del self._generator
+
+
 class CandeObj():
     '''For working with Cande Level 3 problems'''
     _fields = tuple(f.lower() for f in Master._fields + Info._fields + Control._fields)
     _lists = 'groups nodes elements boundaries materials factors'.split()
-    cid_controller = DispatchController(cidbuild_reg)
+    cid_builder = DispatchController(cidbuild_reg)
     groups = ObjListDesc('_groups')
     nodes = ObjListDesc('_nodes')
     elements = ObjListDesc('_elements')
@@ -116,22 +133,22 @@ class CandeObj():
         except KeyError:
             raise ValueError('Invalid starting member name: '
                              '{!r}'.format(start)) from None
-        gen_names = obj.cidgen(startmember)(obj)
-        with obj.cid_controller as gen_build:
+        with obj.cid_builder as builder, 
+             obj.logic_gen(startmember) as logic_gen:
             logging.debug('***CANDE_OBJ BUILD BEGUN***')
-            for line, member_name in zip(lines, gen_names):
+            for line, label in zip(lines, logic_gen):
                 logging.debug('***BEGINNING OF SECTION {} HANDLING***'
-                              ''.format(member_name))
-                cid_obj = obj.unformat(line, member_name)
-                gen_build.send(member_name, cid_obj)
+                              ''.format(label))
+                cid_obj = obj.unformat(line, label)
+                builder.send(label, cid_obj)
                 logging.debug('***ENDING OF SECTION {} HANDLING***'
-                              ''.format(member_name))
+                              ''.format(label))
             logging.debug('***CANDE_OBJ BUILD COMPLETE***')
         return obj
-    @staticmethod
-    def cidgen(cidmember):
-        '''The cid generator object corresponding to the member'''
-        gen = cidgen_reg[cidmember]
+    def logic_gen(self, cidmember='A1'):
+        '''Get a logic generator object corresponding to the member'''
+        start = cidgen_reg[cidmember]
+        gen = GeneratorManager(start, self)
         return gen
     @staticmethod
     def unformatter(cidmember):
