@@ -1,12 +1,11 @@
 import logging
-from mytools.utilities import copymembers, getfields
+from mytools.utilities import copymembers, not_str
 from collections.abc import Sequence, Mapping
 from collections import namedtuple as nt
+from .candehandler import CandeHandler
 from .cid.unformatter import unformatter_reg
-from .cid.gen import cidgen_reg
-from .cid.enum import CidEnum
-from .cid.build import cidbuild_reg, DispatchController
-from .obj import obj_reg, cidname_reg, Master, Info, Control
+from .cid.build import cidbuild_reg
+from .obj import obj_reg, Master, Info, Control
 from . import reg
 
 logging = logging.getLogger(__name__)
@@ -93,13 +92,19 @@ class CandeObj():
     # catalog of members that are collections
     _lists = 'groups nodes elements boundaries materials factors'.split()
     # for initializing empty collection members
-    cid_builder = DispatchController(cidbuild_reg)
     groups = ObjListDesc('_groups')
+    A2 = groups
     nodes = ObjListDesc('_nodes')
+    C3 = nodes
     elements = ObjListDesc('_elements')
+    C4 = elements
     boundaries = ObjListDesc('_boundaries')
+    C5 = boundaries
     materials = ObjListDesc('_materials')
+    D1Soil = materials
+    D1Interf = materials
     factors = ObjListDesc('_factors')
+    E1 = factors
     def __init__(self, cande_obj=None, **kwargs):
         if cande_obj is None:
             cande_obj = CandeObj(CandeNT())
@@ -109,40 +114,33 @@ class CandeObj():
             raise TypeError('Invalid kwargs to create CandeObj') from e
         copymembers(cande_obj, self, CandeNT._fields, suppress_err=False)
         copymembers(from_kwargs, self, kwargs, suppress_err=False)
-        self._init_reg()
-    def _init_reg(self):
-        self.candeattr_reg = reg.CidRegistry(A1=self, A2=self.groups, C1=self, C2=self,
-                                             C3=self.nodes, C4=self.elements,
-                                             C5=self.boundaries, D1Soil=self.materials,
-                                             D1Interf=self.materials, E1=self.factors)
     @classmethod
     def empty(cls):
         obj = cls.__new__(cls)
-        obj._init_reg()
         return obj
     @classmethod
     def from_cid(cls, lines, start='A1'):
         '''Construct an instance using a file-like sequence'''
         not_str(lines)
         obj = cls.empty()
-        with obj.cid_builder as builder, 
-             obj.logic_gen(start) as logic_gen:
+        with obj.builder(start) as build_process:
             logging.debug('***CANDE_OBJ BUILD BEGUN***')
-            cid.listener = builder
-            for line, label in zip(lines, logic_gen):
+            for line, tag in zip(lines, build_process):
                 logging.debug('***BEGINNING OF SECTION {} HANDLING***'
-                              ''.format(label))
-                cid_obj = obj.unformat(line, label)
-                builder.send(label, cid_obj)
+                              ''.format(tag))
+                cid_obj = obj.unformat(line, tag)
+                build_process.send(cid_obj)
                 logging.debug('***ENDING OF SECTION {} HANDLING***'
                               ''.format(label))
             logging.debug('***CANDE_OBJ BUILD COMPLETE***')
         return obj
-    def logic_gen(self, cidmember='A1'):
-        '''Get a logic generator object corresponding to the member'''
-        start = cidgen_reg[cidmember]
-        gen = GeneratorManager(start, self)
-        return gen
+    def builder(self, cidmember='A1'):
+        try:
+            if self._builder.start != cidmember:
+                raise AttributeError()
+        except AttributeError:
+            self._builder = CandeHandler(self)(cidmember)
+        return self._builder
     @staticmethod
     def unformatter(cidmember):
         '''The corresponding unformatter for the member'''
@@ -155,43 +153,7 @@ class CandeObj():
         logging.debug('Unformatting {} to a {}'
                       ''.format(cidmember, ObjType.__name__))
         return ObjType(*unformatter.unformat(cidline))
-    def pull(self, obj, name=None):
-        '''Bring some object into the object model.'''
-        try:
-            name = obj.__name__ if name is None else name
-        except AttributeError:
-            pass
-        if name in 'A1 C1 C2'.split():
-            pass
-        elif name in '':
-            pass
-        else:
-            raise ValueError('Encountered invalid cid line name: {!r}'
-                             ''.format(name))
     def __repr__(self):
         repgen = ('{}={!r}'.format(f, getattr(self, f, None))
                     for f in self._fields)
         return 'CandeObj({})'.format(', '.join(repgen))
-
-    '''
-    def __getattr__(self, attr):
-        if attr in 'Master Control Info'.split():
-            pass
-        else:
-            for member in (self.Master, self.Control, self.Info):
-                try:
-                    return getattr(member, attr)
-                except AttributeError:
-                    pass
-    def __setattr__(self, attr, val):
-        for cidnt_name in 'Master Control Info'.split():
-            try:
-                cidnt = getattr(self, cidnt_name)
-                if attr in cidnt._fields:
-                    setattr(self, cidnt_name, cidnt._replace(**{attr : val}))
-                    break
-            except AttributeError:
-                continue
-        else:
-            super().__setattr__(attr, val)
-    '''

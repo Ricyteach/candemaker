@@ -13,7 +13,7 @@ def A1(cid):
     if cid.method == 1: #  LRFD
         for step_num, _ in enumerate(range(cid.nsteps), 1):
             yield from E1(cid)
-        cid.listener.throw(exc.SequenceComplete, ('Factors completed', len(cid.factors))
+        cid.listener.throw(exc.SequenceComplete, ('Factors completed', len(cid.factors)))
 
 
 def E1(cid):

@@ -1,7 +1,8 @@
 import pdb
 import logging
-from .controllers import merge_lower, controller, top_level_merge, flatten_merge, flat_list_merge, list_merge, list_merge_last, ListComplete, ControlError, MergeError, CommandError
+from .controllers import merge_namedtuple_lower, top_level_merge, flatten_merge, flat_list_merge, list_merge, list_merge_last
 from .. import reg
+from . import exceptions as exc
 
 logging = logging.getLogger(__name__)
 
@@ -21,7 +22,8 @@ cidbuild_reg = reg.CidRegistry(
                             )
 
 
-
+class ControlError: pass
+class CommandError: pass
 
 
 class DispatchController():
@@ -81,11 +83,11 @@ class DispatchController():
                                                   type(cande_obj).__name__))
             self.controller.send(cande_obj)
             logging.debug('Initial attempt to send cande_obj succeeded.')
-        except ListComplete:
+        except exc.SequenceComplete:
             logging.debug('Initial attempt to send cande_obj succeeded. '
                           'Received signal to reset the list.')
             self.reset()
-        except MergeError as merge_err:
+        except exc.MergeError as merge_err:
             # The intial attempt may fail because the namedtuple object is trying
             # to be merged into a top_level object that is itself simply some
             # namedtuple; the two namedtuples need to be merged into a new top_level
@@ -97,7 +99,7 @@ class DispatchController():
             self.reset()
             new_obj = type(type(first).__name__+'Object', (), {})()
             logging.debug('Merging first into new object: {}'.format(type(new_obj).__name__))
-            merge_lower(first, new_obj)
+            merge_namedtuple_lower(first, new_obj)
             self.send_control_command(member_name, new_obj)
             logging.debug('Sending second object: {}'.format(type(second).__name__))
             self.send_cande_obj(second)

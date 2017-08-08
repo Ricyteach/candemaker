@@ -2,16 +2,35 @@ from mytools.resettable import Resettable
 from .cid.build import cidbuild_reg
 from .cid.gen import cidgen_reg
 from .cid.enum import CidEnum
+from .cid.exceptions import ObjectComplete, SequenceComplete
+from .cid import controllers as ctl
+from . import reg
 
 class CandeHandler():
     def __init__(self, candeobj):
-        self.candeobj = candeobj
+        self.obj = candeobj
+        self.candeattr_reg = reg.CidRegistry(A1=candeobj, A2=candeobj.groups, C1=candeobj, C2=candeobj,
+                                             C3=candeobj.nodes, C4=candeobj.elements,
+                                             C5=candeobj.boundaries, D1Soil=candeobj.materials,
+                                             D1Interf=candeobj.materials, E1=candeobj.factors)
+        self.handlerargs_reg = reg.CidRegistry(
+                                            A1 = (candeobj, ctl.merge_namedtuple_lower),
+                                            C1 = (candeobj, ctl.merge_namedtuple_lower),
+                                            C2 = (candeobj, ctl.merge_namedtuple_lower),
+                                            A2 = (candeobj.groups, ctl.merge_namedtuple_lower),
+                                            D1Soil = (candeobj.materials, ctl.merge_namedtuple_lower),
+                                            D1Interf = (candeobj.materials, ctl.merge_namedtuple_lower),
+                                            C3 = (candeobj.nodes,),
+                                            C4 = (candeobj.elements,),
+                                            C5 = (candeobj.boundaries,),
+                                            E1 = (candeobj.factors,),
+                                            )
     def __enter__(self):
         # connect generator to listener attribute
-        self.obj.listener = self.build(self.obj)
-        exec_logic = self.exec_logic
+        self.obj.listener = self.build()
+        exec_logic = self.exec_logic(self.start)
         try:
-            self.logic = exec_logic(self.start)
+            self.logic = exec_logic(self.obj)
         except AttributeError:
             self.logic = exec_logic()
         return self.obj.listener
@@ -20,6 +39,9 @@ class CandeHandler():
         del self.obj.listener
         self.logic.close()
         del self.logic
+    def __call__(self, start):
+        self.start = self.valid_tag(start)
+        return self
     @staticmethod
     def valid_tag(tag):
         try:
@@ -27,9 +49,6 @@ class CandeHandler():
         except KeyError:
             raise ValueError('Invalid tag: '
                              '{!r}'.format(tag)) from None
-    def __call__(self, start):
-        self.start = self.valid_tag(start)
-        return self
     def exec_logic(self, cidmember='A1'):
         '''Get a logic generator object corresponding to the member'''
         return cidgen_reg[cidmember]
@@ -46,11 +65,11 @@ class CandeHandler():
         # handler_args is unique for each CandeObj instance
         # because each instances has its own members to be
         # passed as args
-        handler_args = self.candeobj.handlerargs_reg[tag]
+        handler_args = self.handlerargs_reg[tag]
         return handler_func(*handler_args)
     def get_handler(self, tag):
-        '''Get a Handler object that accepts objects to build the CID file 
-        section corresponding to the tag. The Handler object initializes
+        '''Get a handler object that accepts objects to build the CID file 
+        section corresponding to the tag. The handler object initializes
         itself it has been closed.
         
         Example:
@@ -58,11 +77,11 @@ class CandeHandler():
             h.send(some_A1_obj)
         '''
         try:
-            handler = self._handler
+            self._handler
         except AttributeError:
-            handler = self._handler = Builder(self)
-            handler.send(None)
-        return handler
+            self._handler = self.make_handler(tag)
+            self._handler.send(None)
+        return self._handler
     def build(self):
         # NOTE TO SELF TO ASSIST WITH UNDERSTANDING:
         # + code BEFORE a yield is executed upon next()

@@ -1,4 +1,5 @@
-from .. import exceptions as exc, pipe, soil
+from .. import exceptions as exc
+from . import pipe, soil
 
 __all__ = 'L3 A2 C1 C2 C3 C4 C5'.split()
 

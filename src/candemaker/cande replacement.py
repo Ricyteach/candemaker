@@ -114,9 +114,9 @@ class CandeObj():
         '''Construct an instance using a file-like sequence'''
         not_str(lines)
         obj = cls.empty()
-        with self.builder(start) as build_process:
+        with obj.builder(start) as build_process:
             logging.debug('***CANDE_OBJ BUILD BEGUN***')
-            for line, tag in (lines, build_process):
+            for line, tag in zip(lines, build_process):
                 logging.debug('***BEGINNING OF SECTION {} HANDLING***'
                               ''.format(tag))
                 cid_obj = obj.unformat(line, tag)
