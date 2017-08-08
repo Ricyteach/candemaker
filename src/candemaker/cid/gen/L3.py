@@ -1,58 +1,72 @@
-from ..enum import CidEnum
-from . import CIDError, pipe, soil, gen_line
+from .. import exceptions as exc, pipe, soil
 
-__all__ = 'A2 C1 C2 C3 C4 C5'.split()
+__all__ = 'L3 A2 C1 C2 C3 C4 C5'.split()
+
+def L3(cid):
+    for group_num, _ in enumerate(range(cid.ngroups), 1):
+        try:
+            yield from A2(cid, group_num)
+        except Exception as e:
+            raise exc.CIDError('cid failed at pipe group #'
+                               '{:d}'.format(group_num)) from e
+    cid.listener.throw(exc.SequenceComplete, ('Groups completed', len(cid.groups)))
+    yield from C1(cid)
+    yield from C2(cid)
+    yield from soil.D1(cid)
+
 
 def A2(cid, group_num):
-    yield from gen_line('A2')
+    cid.listener.send('A2')
+    yield
     group = cid.groups[group_num-1]
     try:
-        typ = group.Type
+        typ = group.type
         gen = pipe.lookup[typ]
         yield from gen(cid, group)
     except Exception as e:
-        raise CIDError('cid section B failed for '
+        raise exc.CIDError('cid section B failed for '
                        '{}'.format(group)) from e
-    yield from C1(cid)
+    cid.listener.throw(exc.ObjectComplete)
 
 
 def C1(cid):
-    yield from gen_line('C1')
-    yield from C2(cid)
+    cid.listener.send('C1')
+    yield
 
 
 def C2(cid):
-    yield from gen_line('C2')
-    for n_objs, gen, name in ((cid.nnodes, C3, 'node'),
-                              (cid.nelements, C4, 'element'),
-                              (cid.nbounds, C5, 'boundary')):
+    cid.listener.send('C2')
+    yield
+    for n_objs, gen, name, nplural in ((cid.nnodes, C3, 'node', 'nnodes'),
+                              (cid.nelements, C4, 'element', 'nelements'),
+                              (cid.nbounds, C5, 'boundary', 'nboundaries')):
         for cid_obj_num in range(1, n_objs + 1):
             try:
-                yield from gen(cid, cid_obj_num)
+                gen(cid, cid_obj_num)
+                yield
             except Exception as e:
-                raise CIDError('cid L3.{} failed at {} #'
+                raise exc.CIDError('cid L3.{} failed at {} #'
                                '{:d}'.format(gen.__name__, name,
                                              cid_obj_num)) from e
-
+        cid.listener.throw(exc.SequenceComplete, ('{}s completed'.format(name), getattr(cid, nplural)))
 
 
 def C3(cid, node_num):
     if node_num == cid.nnodes: 
-        yield from gen_line('C3L')
+        cid.listener.send('C3L')
     else:
-        yield from gen_line('C3')
+        cid.listener.send('C3')
 
 
 def C4(cid, element_num):
     if element_num == cid.nelements: 
-        yield from gen_line('C4L')
+        cid.listener.send('C4L')
     else:
-        yield from gen_line('C4')
+        cid.listener.send('C4')
 
 
 def C5(cid, bound_num):
     if bound_num == cid.nbounds: 
-        yield from gen_line('C5L')
+        cid.listener.send('C5L')
     else:
-        yield from gen_line('C5')
-    yield from soil.D1(cid)
+        cid.listener.send('C5')

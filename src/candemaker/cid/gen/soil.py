@@ -1,49 +1,53 @@
-from . import CIDError, gen_line, E1
+from .. import exceptions as exc
 
 __all__ = 'D1 D2Isotropic D2Duncan D2Interface D2MohrCoulomb'.split()
 
 def D1(cid):
-    for n_objs, gen, name in ((cid.nsoil_materials, D1Soil, 'soil material'),
+    for n_objs, nxt, name in ((cid.nsoil_materials, D1Soil, 'soil material'),
                               (cid.ninterf_materials, D1Interf, 'interf material')):
         for cid_obj_num in range(1, n_objs + 1):
             try:
-                yield from gen(cid, cid_obj_num)
+                yield from nxt(cid, cid_obj_num)
             except Exception as e:
-                raise CIDError('cid D1 failed at {} #'
+                raise exc.CIDError('cid D1 failed at {} #'
                                '{:d}'.format(name, cid_obj_num)) from e
-    if cid.method == 1: #  LRFD
-        for step_num, _ in enumerate(range(cid.nsteps), 1):
-            yield from E1(cid)
+        cid.listener.throw(exc.SequenceComplete, ('{}s completed'.format(name), len(cid.materials)))
 
 
 def D1Soil(cid, material_num):
     if cid.ninterf_materials == 0 and material_num == cid.nsoil_materials:
-        yield from gen_line('D1L')
+        cid.listener.send('D1L')
+        yield
     else:
-        yield from gen_line('D1Soil')
+        cid.listener.send('D1Soil')
+        yield
     material = cid.soil_materials[material_num-1]
-    if material.Model not in range(1, 9):
-        raise CIDError('Invalid model number {:d} for material #{:d}'
-                       ''.format(material.Model, material.ID))
-    if material.Model in (7, 8): #  Interface or Composite
-        raise CIDError('Interface or composite model number'
-                       'found in soil material #{:d}'.format(material.ID))
-    yield from D_gens[material.Model](material)
+    if material.model not in range(1, 9):
+        raise exc.CIDError('Invalid model number {:d} for material #{:d}'
+                           ''.format(material.model, material.id))
+    if material.model in (7, 8): #  Interface or Composite
+        raise exc.CIDError('Interface or composite model number'
+                           'found in soil material #{:d}'.format(material.id))
+    D_nxts[material.model](material)
+    cid.listener.throw(exc.ObjectComplete)
 
 
 def D1Interf(cid, material_num):
     if material_num == cid.ninterf_materials:
-        yield from gen_line('D1L')
+        cid.listener.send('D1L')
+        yield
     else:
-        yield from gen_line('D1Interf')
+        cid.listener.send('D1Interf')
+        yield
     material = cid.interf_materials[material_num-1]
-    if material.Model == 8:
+    if material.model == 8:
         return NotImplemented
-    if material.Model not in range(7, 8):
-        raise CIDError('Non-interface or -composite model number ({:d})'
+    if material.model not in range(7, 8):
+        raise exc.CIDError('Non-interface or -composite model number ({:d})'
                        'found in interf material #{:d}'
-                       ''.format(material.Model, material.ID))
-    yield from D2Interface(material)
+                       ''.format(material.model, material.id))
+    D2Interface(material)
+    cid.listener.throw(exc.ObjectComplete)
 
 
 # probably don't ever need these models
@@ -55,45 +59,50 @@ D2Composite = None
 
 
 def D2MohrCoulomb(material):
-    if material.Model != 8:
-        raise CIDError('Model #{:d} invalid for mohr/coulomb'
-                       ''.format(material.Model))
-    yield from gen_line('D2MohrCoulomb')
+    if material.model != 8:
+        raise exc.CIDError('Model #{:d} invalid for mohr/coulomb'
+                       ''.format(material.model))
+    cid.listener.send('D2MohrCoulomb')
+    yield
 
 
 def D2Isotropic(material):
-    if material.Model != 1:
-        raise CIDError('Model #{:d} invalid for isotropic'
-                       ''.format(material.Model))
-    yield from gen_line('D2Isotropic')
+    if material.model != 1:
+        raise exc.CIDError('Model #{:d} invalid for isotropic'
+                       ''.format(material.model))
+    cid.listener.send('D2Isotropic')
+    yield
 
 
 def D2Duncan(material):
-    if material.Model != 3:
-        raise CIDError('Model #{:d} invalid for duncan'
-                       ''.format(material.Model))
+    if material.model != 3:
+        raise exc.CIDError('Model #{:d} invalid for duncan'
+                       ''.format(material.model))
     duncan_models = ('CA105 CA95 CA90 SM100 SM90 SM85'
                      'SC100 SC90 SC85 CL100 CL90 CL85').split()
     selig_models = ('SW100 SW95 SW90 SW85 SW80'
                     'ML95 ML90 ML85 ML80 ML50'
                     'CL95 CL90 CL85 CL80').split()
 
-    yield from gen_line('D2Duncan')
-    if material.Name == 'USER':
-        yield from gen_line('D3Duncan')
-        yield from gen_line('D4Duncan')
-    elif material.Name not in duncan_models + selig_models:
-        raise CIDError('Invalid Duncan material name for '
-                       '#{}'.format(material.ID))
+    cid.listener.send('D2Duncan')
+    yield
+    if material.name == 'USER':
+        cid.listener.send('D3Duncan')
+        yield
+        cid.listener.send('D4Duncan')
+        yield
+    elif material.name not in duncan_models + selig_models:
+        raise exc.CIDError('Invalid Duncan material name for '
+                       '#{}'.format(material.id))
 
 
 def D2Interface(material):
-    if material.Model != 6:
-        raise CIDError('Model #{:d} invalid for interface material'
-                       ''.format(material.Model))
-    yield from gen_line('D2Interface')
+    if material.model != 6:
+        raise exc.CIDError('Model #{:d} invalid for interface material'
+                       ''.format(material.model))
+    cid.listener.send('D2Interface')
+    yield
 
-
-D_gens = (None, D2Isotropic, D2Orthotropic, D2Duncan, 
+D_nxts = (None, D2Isotropic, D2Orthotropic, D2Duncan, 
           D2Overburden, D2Hardin, D2HardinTRIA, D2Interface, 
           D2Composite, D2MohrCoulomb)

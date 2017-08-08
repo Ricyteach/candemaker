@@ -88,8 +88,11 @@ class GeneratorManager():
 
 class CandeObj():
     '''For working with Cande Level 3 problems'''
+    # catalog of members that are atomic
     _fields = tuple(f.lower() for f in Master._fields + Info._fields + Control._fields)
+    # catalog of members that are collections
     _lists = 'groups nodes elements boundaries materials factors'.split()
+    # for initializing empty collection members
     cid_builder = DispatchController(cidbuild_reg)
     groups = ObjListDesc('_groups')
     nodes = ObjListDesc('_nodes')
@@ -110,8 +113,8 @@ class CandeObj():
     def _init_reg(self):
         self.candeattr_reg = reg.CidRegistry(A1=self, A2=self.groups, C1=self, C2=self,
                                              C3=self.nodes, C4=self.elements,
-                                             C5=self.boundaries, D1=self.materials,
-                                             E1=self.factors)
+                                             C5=self.boundaries, D1Soil=self.materials,
+                                             D1Interf=self.materials, E1=self.factors)
     @classmethod
     def empty(cls):
         obj = cls.__new__(cls)
@@ -120,22 +123,12 @@ class CandeObj():
     @classmethod
     def from_cid(cls, lines, start='A1'):
         '''Construct an instance using a file-like sequence'''
-        try:
-            lines + ''
-        except TypeError:
-            pass
-        else:
-            raise TypeError('A string was supplied; a file '
-                            'line sequence is required.')
+        not_str(lines)
         obj = cls.empty()
-        try:
-            startmember = CidEnum[start].name
-        except KeyError:
-            raise ValueError('Invalid starting member name: '
-                             '{!r}'.format(start)) from None
         with obj.cid_builder as builder, 
-             obj.logic_gen(startmember) as logic_gen:
+             obj.logic_gen(start) as logic_gen:
             logging.debug('***CANDE_OBJ BUILD BEGUN***')
+            cid.listener = builder
             for line, label in zip(lines, logic_gen):
                 logging.debug('***BEGINNING OF SECTION {} HANDLING***'
                               ''.format(label))

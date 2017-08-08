@@ -1,21 +1,26 @@
-from ..cid import gen_line
-
-
 def B1Steel(cid, group):
-    yield from gen_line('B1Steel')
+    cid.listener.send('B1Steel')
+    yield
     if cid.mode == 'ANALYS':
-        yield from gen_line('B2SteelA')
+        cid.listener.send('B2SteelA')
+        yield
     elif cid.mode == 'DESIGN':
         if cid.method == 0: #  WSD
-            yield from gen_line('B2SteelDWSD')
+            cid.listener.send('B2SteelDWSD')
+            yield
         if cid.method == 1: #  LRFD
-            yield from gen_line('B2SteelDLRFD')
+            cid.listener.send('B2SteelDLRFD')
+            yield
     import pdb;pdb.set_trace()
-    if group.JointSlip: #  Slotted Joints
-        yield from gen_line('B2bSteel')
+    if group.jointslip: #  Slotted Joints
+        cid.listener.send('B2bSteel')
+        yield
         if cid.level > 1:
-            yield from gen_line('B2cSteel')
-            if group.VaryTravel: # Model of "Half Joints"
-                yield from gen_line('B2dSteel')
+            cid.listener.send('B2cSteel')
+            yield
+            if group.varytravel: # Model of "Half Joints"
+                cid.listener.send('B2dSteel')
+                yield
     if cid.method == 1: #  LRFD
-        yield from gen_line('B3SteelADLRFD')
+        cid.listener.send('B3SteelADLRFD')
+        yield
