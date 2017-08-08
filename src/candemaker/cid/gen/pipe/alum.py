@@ -1,16 +1,14 @@
+from ..cid import gen_line
+
+
 def B1Alum(cid, group):
-    cid.listener.send('B1Alum')
-    yield
+    yield from gen_line('B1Alum')
     if cid.mode == 'ANALYS':
-        cid.listener.send('B2AlumA')
-        yield
+        yield from gen_line('B2AlumA')
     elif cid.mode == 'DESIGN':
         if cid.method == 0: #  WSD
-            cid.listener.send('B2AlumDWSD')
-            yield
+            yield from gen_line('B2AlumDWSD')
         if cid.method == 1: #  LRFD
-            cid.listener.send('B2AlumDLRFD')
-            yield
+            yield from gen_line('B2AlumDLRFD')
     if cid.method == 1: #  LRFD
-        cid.listener.send('B3AlumADLRFD')
-        yield
+        yield from gen_line('B3AlumADLRFD')

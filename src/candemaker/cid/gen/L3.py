@@ -1,7 +1,9 @@
 from .. import exceptions as exc
-from . import pipe, soil
+from . import pipe, soil, gen_line
+from ..enum import CidEnum
 
-__all__ = 'L3 A2 C1 C2 C3 C4 C5'.split()
+__all__ = 'A2 C1 C2 C3 C4 C5'.split()
+
 
 def L3(cid):
     for group_num, _ in enumerate(range(cid.ngroups), 1):
@@ -17,8 +19,7 @@ def L3(cid):
 
 
 def A2(cid, group_num):
-    cid.listener.send('A2')
-    yield
+    yield from gen_line('A2')
     group = cid.groups[group_num-1]
     try:
         typ = group.type
@@ -31,13 +32,11 @@ def A2(cid, group_num):
 
 
 def C1(cid):
-    cid.listener.send('C1')
-    yield
+    yield from gen_line('C1')
 
 
 def C2(cid):
-    cid.listener.send('C2')
-    yield
+    yield from gen_line('C2')
     for n_objs, gen, name, nplural in ((cid.nnodes, C3, 'node', 'nnodes'),
                               (cid.nelements, C4, 'element', 'nelements'),
                               (cid.nbounds, C5, 'boundary', 'nboundaries')):
@@ -53,21 +52,21 @@ def C2(cid):
 
 
 def C3(cid, node_num):
-    if node_num == cid.nnodes: 
-        cid.listener.send('C3L')
+    if node_num == cid.nnodes:
+        yield from gen_line('C3L')
     else:
-        cid.listener.send('C3')
+        yield from gen_line('C3')
 
 
 def C4(cid, element_num):
     if element_num == cid.nelements: 
-        cid.listener.send('C4L')
+        yield from gen_line('C4L')
     else:
-        cid.listener.send('C4')
+        yield from gen_line('C4')
 
 
 def C5(cid, bound_num):
     if bound_num == cid.nbounds: 
-        cid.listener.send('C5L')
+        yield from gen_line('C5L')
     else:
-        cid.listener.send('C5')
+        yield from gen_line('C5')

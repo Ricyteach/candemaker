@@ -1,4 +1,4 @@
-from .cid import A1, E1
+from .cid import A1, E1, gen_line
 from . import L3
 from . import pipe
 from . import soil

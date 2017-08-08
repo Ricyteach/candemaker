@@ -1,52 +1,44 @@
 from ... import exceptions as exc
+from ..cid import gen_line
 
 
 def B1Plastic(cid, group):
-    cid.listener.send('B1Plastic')
-    yield
+    yield from gen_line('B1Plastic')
     yield from B2Plastic(cid, group)
 
 
 def B2Plastic(cid, group):
-    cid.listener.send('B2Plastic')
-    yield
-    yield from B3_dict[group.walltype](cid)
+    yield from gen_line('B2Plastic')
+    yield from B3_dict[group.WallType](cid)
     if cid.method == 1:  # LRFD
         yield from B4Plastic(cid)
 
 
 def B3PlasticGeneral(cid):
     if cid.mode != 'ANALYS':
-        raise exc.CIDError('General plastic pipe type for ANALYS mode only')
-    cid.listener.send('B3PlasticAGeneral')
-    yield
+        raise CIDError('General plastic pipe type for ANALYS mode only')
+    yield from gen_line('B3PlasticAGeneral')
 
 
 def B3PlasticSmooth(cid):
     if cid.mode == 'ANALYS':
-        cid.listener.send('B3PlasticASmooth')
-        yield
+        yield from gen_line('B3PlasticASmooth')
     elif cid.mode == 'DESIGN':
         if cid.method == 0:  # WSD
-            cid.listener.send('B3PlasticDWSD')
-            yield
+            yield from gen_line('B3PlasticDWSD')
         elif cid.method == 1:  # LRFD
-            cid.listener.send('B3PlasticDLRFD')
-            yield
+            yield from gen_line('B3PlasticDLRFD')
 
 
 def B3PlasticProfile(cid):
     if cid.mode != 'ANALYS':
-        raise exc.CIDError('Profile plastic pipe type for ANALYS mode only')
-    cid.listener.send('B3PlasticAProfile')
-    yield
-    cid.listener.send('B3bPlasticAProfile')
-    yield
+        raise CIDError('Profile plastic pipe type for ANALYS mode only')
+    yield from gen_line('B3PlasticAProfile')
+    yield from gen_line('B3bPlasticAProfile')
 
 
 def B4Plastic(cid):        
-    cid.listener.send('B4Plastic')
-    yield
+        yield from gen_line('B4Plastic')
 
 
 B3_dict = dict(

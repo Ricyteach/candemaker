@@ -131,7 +131,7 @@ class CandeObj():
                 cid_obj = obj.unformat(line, tag)
                 build_process.send(cid_obj)
                 logging.debug('***ENDING OF SECTION {} HANDLING***'
-                              ''.format(label))
+                              ''.format(tag))
             logging.debug('***CANDE_OBJ BUILD COMPLETE***')
         return obj
     def builder(self, cidmember='A1'):

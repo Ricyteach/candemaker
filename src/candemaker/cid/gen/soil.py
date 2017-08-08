@@ -1,6 +1,8 @@
 from .. import exceptions as exc
+from . import gen_line
 
 __all__ = 'D1 D2Isotropic D2Duncan D2Interface D2MohrCoulomb'.split()
+
 
 def D1(cid):
     for n_objs, nxt, name in ((cid.nsoil_materials, D1Soil, 'soil material'),
@@ -16,11 +18,9 @@ def D1(cid):
 
 def D1Soil(cid, material_num):
     if cid.ninterf_materials == 0 and material_num == cid.nsoil_materials:
-        cid.listener.send('D1L')
-        yield
+        yield from gen_line('D1L')
     else:
-        cid.listener.send('D1Soil')
-        yield
+        yield from gen_line('D1Soil')
     material = cid.soil_materials[material_num-1]
     if material.model not in range(1, 9):
         raise exc.CIDError('Invalid model number {:d} for material #{:d}'
@@ -34,11 +34,9 @@ def D1Soil(cid, material_num):
 
 def D1Interf(cid, material_num):
     if material_num == cid.ninterf_materials:
-        cid.listener.send('D1L')
-        yield
+        yield from gen_line('D1L')
     else:
-        cid.listener.send('D1Interf')
-        yield
+        yield from gen_line('D1Interf')
     material = cid.interf_materials[material_num-1]
     if material.model == 8:
         return NotImplemented
@@ -62,16 +60,14 @@ def D2MohrCoulomb(material):
     if material.model != 8:
         raise exc.CIDError('Model #{:d} invalid for mohr/coulomb'
                        ''.format(material.model))
-    cid.listener.send('D2MohrCoulomb')
-    yield
+    yield from gen_line('D2MohrCoulomb')
 
 
 def D2Isotropic(material):
     if material.model != 1:
         raise exc.CIDError('Model #{:d} invalid for isotropic'
                        ''.format(material.model))
-    cid.listener.send('D2Isotropic')
-    yield
+    yield from gen_line('D2Isotropic')
 
 
 def D2Duncan(material):
@@ -84,13 +80,10 @@ def D2Duncan(material):
                     'ML95 ML90 ML85 ML80 ML50'
                     'CL95 CL90 CL85 CL80').split()
 
-    cid.listener.send('D2Duncan')
-    yield
+    yield from gen_line('D2Duncan')
     if material.name == 'USER':
-        cid.listener.send('D3Duncan')
-        yield
-        cid.listener.send('D4Duncan')
-        yield
+        yield from gen_line('D3Duncan')
+        yield from gen_line('D4Duncan')
     elif material.name not in duncan_models + selig_models:
         raise exc.CIDError('Invalid Duncan material name for '
                        '#{}'.format(material.id))
@@ -100,8 +93,7 @@ def D2Interface(material):
     if material.model != 6:
         raise exc.CIDError('Model #{:d} invalid for interface material'
                        ''.format(material.model))
-    cid.listener.send('D2Interface')
-    yield
+    yield from gen_line('D2Interface')
 
 D_nxts = (None, D2Isotropic, D2Orthotropic, D2Duncan, 
           D2Overburden, D2Hardin, D2HardinTRIA, D2Interface, 

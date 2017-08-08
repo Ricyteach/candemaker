@@ -94,44 +94,42 @@ class CandeHandler():
         #   the yield as usual, and x gets the next .send() arg.
         try:
             logic = self.logic
-            try:
+            while True:
                 try:
-                    # execute dangling yield in logic generation
-                    next(logic)
-                except ObjectComplete as e:
-                    # next triggered a completion signal from logic
-                    obj_handler.throw(e) # closes current handler
-                    obj_handler.send(None) # closes current handler
-                    # did not delete handler because these flat_list_merge
-                    # handlers, which receive completion signal of a pipe
-                    # group or a material type, are assumed to be @Resettable
-                    # so that the current sequence continues being appended to
-            except SequenceComplete:
-                # next triggered completion signal
-                # (second or first) from logic
-                obj_handler.close()
-                del obj_handler # new sequence means new handler
-            # label sent by self.logic generator
-            label = yield
-            # transmit label to main loop
-            # for making an obj from label
-            yield label
-            # obj sent by main loop
-            obj = yield
-            try:
-                # continue with same handler if it exists
-                obj_handler
-            except NameError:
-                # lookup and init. a handler generator
-                obj_handler = self.get_handler(label)
-                # the above line really shouldn't cause any errors...
-                # if it does then i may not understand what my code
-                # is doing and that sucks.
-            try:
-                obj_handler.send(obj) # success
-            except Complete:
-                # got signal that section is complete
-                obj_handler.close()
+                    try:
+                        # label sent by self.logic generator
+                        label = next(logic)
+                    except ObjectComplete as e:
+                        # next triggered a completion signal from logic
+                        obj_handler.throw(e) # closes current handler
+                        obj_handler.send(None) # closes current handler
+                        # did not delete handler because these flat_list_merge
+                        # handlers, which receive completion signal of a pipe
+                        # group or a material type, are assumed to be @Resettable
+                        # so that the current sequence continues being appended to
+                except SequenceComplete:
+                    # next triggered completion signal
+                    # (second or first) from logic
+                    obj_handler.close()
+                    del obj_handler # new sequence means new handler
+                # transmit label to main loop
+                # for making an obj from label
+                # and receive obj sent by main loop
+                obj = yield label
+                try:
+                    # continue with same handler if it exists
+                    obj_handler
+                except NameError:
+                    # lookup and init. a handler generator
+                    obj_handler = self.get_handler(label)
+                    # the above line really shouldn't cause any errors...
+                    # if it does then i may not understand what my code
+                    # is doing and that sucks.
+                try:
+                    obj_handler.send(obj) # success
+                except ObjectComplete:
+                    # got signal that section is complete
+                    obj_handler.close()
         except GeneratorExit:
             del self._handler
             raise
