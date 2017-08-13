@@ -18,7 +18,7 @@ def merge_objs(from_obj, to_obj, members):
 
 def merge_default(from_obj, to_obj):
     '''Copies all members from one object to another.'''
-    fields = vars(from_obj)
+    fields = list(vars(from_obj))
     merge_objs(from_obj, to_obj, fields)
 
 def merge_namedtuple(from_nt, to_obj):
@@ -88,8 +88,9 @@ def flatten_merge(top_obj, merger=merge_default):
         while True:
             yield from top_level_merge(top_obj, merger)
             logging.debug('continuing flatten_merge')
-    except exc.Complete:
+    except exc.ObjectComplete:
         logging.debug('flatten_merge completed')
+        raise
     except GeneratorExit:
         logging.debug('flatten_merge exited')
         raise
@@ -102,8 +103,9 @@ def mult_list_merge(xlist):
         while True:
             yield from list_merge(xlist)
             logging.debug('continuing mult_list_merge')
-    except exc.Complete:
+    except exc.SequenceComplete:
         logging.debug('mult_list_merge completed')
+        raise
     except GeneratorExit:
         logging.debug('mult_list_merge exited')
         raise
@@ -118,22 +120,23 @@ def flat_list_merge(xlist, merger=merge_default):
         xlist.append(obj)
         obj_merge = flatten_merge(obj, merger)
         yield from obj_merge
+    except exc.ObjectComplete:
         logging.debug('flat_list_merge finished')
+        raise
     except GeneratorExit:
         logging.debug('flat_list_merge exited')
         raise
 
-from .. import reg
+from .enum import CidRegistry
 
-cidbuild_reg = reg.CidRegistry(
-                            A1 = top_level_merge_last,
-                            C1 = top_level_merge_last,
-                            C2 = top_level_merge_last,
-                            A2 = flat_list_merge,
-                            D1Soil = flat_list_merge,
-                            D1Interf = flat_list_merge,
-                            C3 = mult_list_merge,
-                            C4 = mult_list_merge,
-                            C5 = mult_list_merge,
-                            E1 = mult_list_merge,
-                            )
+class CidBuildReg(CidRegistry):
+    A1 = top_level_merge_last
+    C1 = top_level_merge_last
+    C2 = top_level_merge_last
+    A2 = flat_list_merge
+    D1Soil = flat_list_merge
+    D1Interf = flat_list_merge
+    C3 = mult_list_merge
+    C4 = mult_list_merge
+    C5 = mult_list_merge
+    E1 = mult_list_merge

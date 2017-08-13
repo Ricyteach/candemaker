@@ -12,10 +12,9 @@ logger.info('candemaker initialized')
 from . import cid
 from .cid import linedef
 from .cid.enum import CidEnum
-from .obj import *
 from .cande import CandeObj, CandeNT
 # from . import parmatters
-from . import reg
+# from . import reg
 
 #  reg.register_all()
 

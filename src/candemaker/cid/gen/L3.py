@@ -9,6 +9,8 @@ def L3(cid):
     for group_num, _ in enumerate(range(cid.ngroups), 1):
         try:
             yield from A2(cid, group_num)
+        except StopIteration:
+            raise
         except Exception as e:
             raise exc.CIDError('cid failed at pipe group #'
                                '{:d}'.format(group_num)) from e
@@ -20,11 +22,14 @@ def L3(cid):
 
 def A2(cid, group_num):
     yield from gen_line('A2')
+    import pdb;pdb.set_trace()
     group = cid.groups[group_num-1]
     try:
         typ = group.type
         gen = pipe.lookup[typ]
         yield from gen(cid, group)
+    except StopIteration:
+        raise
     except Exception as e:
         raise exc.CIDError('cid section B failed for '
                        '{}'.format(group)) from e
@@ -42,8 +47,9 @@ def C2(cid):
                               (cid.nbounds, C5, 'boundary', 'nboundaries')):
         for cid_obj_num in range(1, n_objs + 1):
             try:
-                gen(cid, cid_obj_num)
-                yield
+                yield from gen(cid, cid_obj_num)
+            except StopIteration:
+                raise
             except Exception as e:
                 raise exc.CIDError('cid L3.{} failed at {} #'
                                '{:d}'.format(gen.__name__, name,

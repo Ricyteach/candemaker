@@ -9,7 +9,6 @@ def cid_lines():
 @pytest.mark.current
 @pytest.mark.cande
 def test_from_cid(cid_lines):
-    import pdb;pdb.set_trace()
     CandeObj.from_cid(cid_lines)
 
 @pytest.mark.cande

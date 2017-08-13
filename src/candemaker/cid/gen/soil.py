@@ -10,6 +10,8 @@ def D1(cid):
         for cid_obj_num in range(1, n_objs + 1):
             try:
                 yield from nxt(cid, cid_obj_num)
+            except StopIteration:
+                raise
             except Exception as e:
                 raise exc.CIDError('cid D1 failed at {} #'
                                '{:d}'.format(name, cid_obj_num)) from e

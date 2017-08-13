@@ -70,10 +70,25 @@ class CidEnum(AutoName):
     B3SteelADLRFD = auto()
 
 
+# THIS IS NOT WORKING RIGHT NOW
+class CidRegistry(Enum):
+    '''Member names validated against CidEnum.'''
+    def _generate_next_value_(name, start, count, last_values):
+        '''
+        if name not in CidEnum.__members__:
+            raise ValueError(f'{name!r} is not a valid CidEnum '
+                              'member name.')
+        try:
+            return super(Enum, CidRegistry)._generate_next_value_(name, start,
+                                                                  count, last_values)
+        except AttributeError:
+            pass
+        '''
+
 class ObjEnum(AutoName):
     '''Names of objects that will be used to represent CID
     line information. Have created this name catalog so 
-    the are easier to remember later.'''
+    they are easier to remember later.'''
     # any
     Master = auto()
     Factor = auto()
@@ -144,3 +159,19 @@ class ObjEnum(AutoName):
     Steel2c = auto()
     Steel2d = auto()
     Steel3ADLRFD = auto()
+
+
+# THIS IS NOT WORKING RIGHT NOW
+class ObjRegistry(Enum):
+    '''Member names validated against ObjEnum.'''
+    def _generate_next_value_(name, start, count, last_values):
+        '''
+        if name not in ObjEnum.__members__:
+            raise ValueError(f'{name!r} is not a valid ObjEnum '
+                              'member name.')
+        try:
+            return super(Enum, ObjRegistry)._generate_next_value_(name, start,
+                                                                  count, last_values)
+        except AttributeError:
+            pass
+        '''
