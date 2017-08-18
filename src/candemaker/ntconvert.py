@@ -57,8 +57,7 @@ class {name}({bases_str}):
     return result
 
 
-class NTtoLowerCaseObjEnum(Enum):
+def NTtoLowerCaseObjFactory(name):
     '''Creates LowerCaseObj classes for members of CidTagReg.'''
-    def _generate_next_value_(name, start, count, last_values):
-        tag, NT = name, CidTagReg[name].value
-        return NTtoLowerCaseObj(name=tag, bases=(NT,))
+    tag, NT = name, CidTagReg[name]
+    return NTtoLowerCaseObj(name=tag, bases=(NT,))

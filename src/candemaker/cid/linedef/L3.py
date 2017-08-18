@@ -1,5 +1,5 @@
 from .. import format_specs as fs
-from .any import line
+from .general import line
 
 __all__ = 'A2 C1 C2 C3 C4 C5'.split()
 

@@ -127,16 +127,17 @@ def flat_list_merge(xlist, merger=merge_default):
         logging.debug('flat_list_merge exited')
         raise
 
-from .enum import CidRegistry
+from .validdict import CidRegistry
 
-class CidBuildReg(CidRegistry):
-    A1 = top_level_merge_last
-    C1 = top_level_merge_last
-    C2 = top_level_merge_last
-    A2 = flat_list_merge
-    D1Soil = flat_list_merge
-    D1Interf = flat_list_merge
-    C3 = mult_list_merge
-    C4 = mult_list_merge
-    C5 = mult_list_merge
-    E1 = mult_list_merge
+CidBuildReg = CidRegistry(
+    A1 = top_level_merge_last,
+    C1 = top_level_merge_last,
+    C2 = top_level_merge_last,
+    A2 = flat_list_merge,
+    D1Soil = flat_list_merge,
+    D1Interf = flat_list_merge,
+    C3 = mult_list_merge,
+    C4 = mult_list_merge,
+    C5 = mult_list_merge,
+    E1 = mult_list_merge,
+    )

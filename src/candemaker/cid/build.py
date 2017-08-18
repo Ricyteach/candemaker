@@ -1,12 +1,12 @@
 import pdb
 import logging
 from .controllers import merge_namedtuple_lower, top_level_merge, flatten_merge, flat_list_merge, list_merge, list_merge_last
-from .. import reg
+from .validdict import CidRegistry
 from . import exceptions as exc
 
 logging = logging.getLogger(__name__)
 
-cidbuild_reg = reg.CidRegistry(
+cidbuild_reg = CidRegistry(
                             A1 = flatten_merge,
                             C1 = flatten_merge,
                             C2 = flatten_merge,

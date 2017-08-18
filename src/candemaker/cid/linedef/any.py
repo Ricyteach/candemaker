@@ -1,11 +1,5 @@
-from collections import namedtuple as nt
 from .. import format_specs as fs
-
-Field = nt('Field', 'name spec default')
-
-def line(**field_defs):
-    '''Return a cid file line definition composed of a tuple of fields'''
-    return tuple(Field(n, s, d) for n, (s, d) in field_defs.items())
+from .general import line
 
 A1 = line(
             # ANALYS or DESIGN

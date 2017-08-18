@@ -1,5 +1,5 @@
 from .. import format_specs as fs
-from .any import line
+from .general import line
 
 
 D1 = line(

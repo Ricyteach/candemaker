@@ -1,9 +1,10 @@
 from mytools.resettable import Resettable
+from .cid.validdict import CidRegistry
 from .cid.controllers import CidBuildReg
 from .cid.gen import CidGenReg
-from .cid.enum import CidEnum, CidRegistry
+from .cid.enum import CidEnum
 from .cid.exceptions import ObjectComplete, SequenceComplete
-from .cid import controllers as ctl
+
 
 class CandeHandler():
     def __init__(self, candeobj):
@@ -14,8 +15,7 @@ class CandeHandler():
                                          C5=candeobj.boundaries, D1Soil=candeobj.materials,
                                          D1Interf=candeobj.materials, E1=candeobj.factors)
         '''
-        self.handlerargs_reg = CidRegistry('handlerargs_reg', 
-                                            dict(
+        self.handlerargs_reg = CidRegistry(dict(
                                                     A1 = (candeobj, ),
                                                     C1 = (candeobj, ),
                                                     C2 = (candeobj, ),
@@ -50,7 +50,7 @@ class CandeHandler():
                              '{!r}'.format(tag)) from None
     def exec_logic(self, cidmember='A1'):
         '''Get a logic generator object corresponding to the member'''
-        return getattr(CidGenReg,cidmember)
+        return CidGenReg[cidmember]
     def make_handler(self, tag):
         '''Get a generator that accepts objects to build the CID file 
         section corresponding to the tag.
@@ -60,11 +60,11 @@ class CandeHandler():
             h.send(None)
             h.send(some_A1_obj)
         '''
-        handler_func = Resettable(getattr(CidBuildReg,tag))
+        handler_func = Resettable(CidBuildReg[tag])
         # handler_args is unique for each CandeObj instance
         # because each instances has its own members to be
         # passed as args
-        handler_args = self.handlerargs_reg[tag].value
+        handler_args = self.handlerargs_reg[tag]
         return handler_func(*handler_args)
     def get_handler(self, tag):
         '''Get a handler object that accepts objects to build the CID file 

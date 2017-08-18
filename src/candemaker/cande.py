@@ -3,10 +3,10 @@ from mytools.utilities import copymembers, not_str
 from enum import Enum, auto
 from collections.abc import Sequence, Mapping
 from collections import namedtuple as nt
-from .candehandler import CandeHandler
+from .cid.validdict import CidRegistry
 from .cid.registry import CidUnformatterReg, CidNtReg
-from .cid.enum import CidRegistry
-from .ntconvert import NTtoLowerCaseObjEnum
+from .candehandler import CandeHandler
+from .ntconvert import NTtoLowerCaseObjFactory
 
 logging = logging.getLogger(__name__)
 
@@ -31,10 +31,11 @@ def flatten(obj):
 CandeNTBase = nt('CandeNTBase', '{} groups nodes elements boundaries'
                                 'materials factors'.format(
                                                     ' '.join(f.lower()
-                                                    for mem in (CidNtReg.Master,
-                                                               CidNtReg.Info,
-                                                               CidNtReg.Control)
-                                                    for f in mem.value._fields
+                                                    for mem in (CidNtReg['Master'],
+                                                               CidNtReg['Info'],
+                                                               CidNtReg['Control'],
+                                                               )
+                                                    for f in mem._fields
                                                     )
                                                     )
                 )
@@ -44,10 +45,11 @@ class CandeNT(CandeNTBase):
     '''Fully defined Cande Level 3 cid object'''
     __slots__ = ()
     def __new__(cls, *args, **kwargs):
-        defaults = dict((f.lower(), v) for f,v in flatten((CidNtReg.Master.value(),
-                                                           CidNtReg.Info.value(),
-                                                           CidNtReg.Control.value(),
-                                                           )))
+        defaults = dict((f.lower(), v) for f,v in flatten((CidNtReg['Master'](),
+                                                           CidNtReg['Info'](),
+                                                           CidNtReg['Control'](),
+                                                           ))
+                       )
         for field in ('groups nodes elements boundaries '
                       'materials factors').split():
             defaults[field] = []
@@ -96,9 +98,9 @@ class GeneratorManager():
 class CandeObj():
     '''For working with Cande Level 3 problems'''
     # catalog of members that are atomic
-    _fields = tuple(f.lower() for f in CidNtReg.Master.value._fields +
-                                       CidNtReg.Info.value._fields +
-                                       CidNtReg.Control.value._fields)
+    _fields = tuple(f.lower() for f in CidNtReg['Master']._fields +
+                                       CidNtReg['Info']._fields +
+                                       CidNtReg['Control']._fields)
     # catalog of members that are collections
     _lists = ('groups nodes elements boundaries '
              'materials factors').split()
@@ -158,12 +160,12 @@ class CandeObj():
     @staticmethod
     def unformatter(cidmember):
         '''The corresponding unformatter for the member'''
-        return CidUnformatterReg[cidmember].value
+        return CidUnformatterReg[cidmember]
     @classmethod
     def unformat(cls, cidline, cidmember):
         '''Parse a CID file line into a cid object'''
         unformatter = cls.unformatter(cidmember)
-        ObjType = CandeObjReg[cidmember].value
+        ObjType = CandeObjReg[cidmember]
         logging.debug('Unformatting {} to a {}'
                       ''.format(cidmember, ObjType.__name__))
         return ObjType(*unformatter.unformat(cidline))
@@ -172,60 +174,63 @@ class CandeObj():
                     for f in self._fields)
         return 'CandeObj({})'.format(', '.join(repgen))
 
-class CandeObjReg(NTtoLowerCaseObjEnum, CidRegistry):
+CandeObjReg = CidRegistry(
+    {k:NTtoLowerCaseObjFactory(k) for k in (
     # any
-    A1 = auto()
-    E1 = auto()
+    'A1',
+    'E1',
     # L3 Only
-    A2 = auto()
-    C1 = auto()
-    C2 = auto()
-    C3 = auto()
-    # C3L = auto()
-    C4 = auto()
-    # C4L = auto()
-    C5 = auto()
-    # C5L = auto()
+    'A2',
+    'C1',
+    'C2',
+    'C3',
+    # 'C3L',
+    'C4',
+    # 'C4L',
+    'C5',
+    # 'C5L',
     # soil
-    D1 = auto()
-    # D1L = auto()
-    # D1Soil = auto()
-    # D1SoilL = auto()
-    # D1Interf = auto()
-    # D1InterfL = auto()
-    # D2Orthotropic = auto()
-    # D2Over = auto()
-    # D2Hardin = auto()
-    # D2HardinTRIA = auto()
-    # D2Composite = auto()
-    # D2MohrCoulomb = auto()
-    # D2Isotropic = auto()
-    # D2Duncan = auto()
-    # D3Duncan = auto()
-    # D4Duncan = auto()
-    # D2Interface = auto()
-    # alum
-    # B1Alum = auto()
-    # B2AlumA = auto()
-    # B2AlumDWSD = auto()
-    # B2AlumDLRFD = auto()
-    # B3AlumADLRFD = auto()
-    # plastic
-    # B1Plastic = auto()
-    # B2Plastic = auto()
-    # B3PlasticAGeneral = auto()
-    # B3PlasticASmooth = auto()
-    # B3PlasticDWSD = auto()
-    # B3PlasticDLRFD = auto()
-    # B3PlasticAProfile = auto()
-    # B3bPlasticAProfile = auto()
-    # B4Plastic = auto()
-    # steel
-    # B1Steel = auto()
-    # B2SteelA = auto()
-    # B2SteelDWSD = auto()
-    # B2SteelDLRFD = auto()
-    # B2bSteel = auto()
-    # B2cSteel = auto()
-    # B2dSteel = auto()
-    # B3SteelADLRFD = auto()
+    'D1',
+    # 'D1L',
+    # 'D1Soil',
+    # 'D1SoilL',
+    # 'D1Interf',
+    # 'D1InterfL',
+    # 'D2Orthotropic',
+    # 'D2Over',
+    # 'D2Hardin',
+    # 'D2HardinTRIA',
+    # 'D2Composite',
+    # 'D2MohrCoulomb',
+    # 'D2Isotropic',
+    # 'D2Duncan',
+    # 'D3Duncan',
+    # 'D4Duncan',
+    # 'D2Interface',
+    # 'alum
+    # 'B1Alum',
+    # 'B2AlumA',
+    # 'B2AlumDWSD',
+    # 'B2AlumDLRFD',
+    # 'B3AlumADLRFD',
+    # 'plastic
+    # 'B1Plastic',
+    # 'B2Plastic',
+    # 'B3PlasticAGeneral',
+    # 'B3PlasticASmooth',
+    # 'B3PlasticDWSD',
+    # 'B3PlasticDLRFD',
+    # 'B3PlasticAProfile',
+    # 'B3bPlasticAProfile',
+    # 'B4Plastic',
+    # 'steel
+    # 'B1Steel',
+    # 'B2SteelA',
+    # 'B2SteelDWSD',
+    # 'B2SteelDLRFD',
+    # 'B2bSteel',
+    # 'B2cSteel',
+    # 'B2dSteel',
+    # 'B3SteelADLRFD',
+    )}
+    )
